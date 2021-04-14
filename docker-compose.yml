@@ -1,0 +1,27 @@
+version: '3.3'
+services:
+  mongodb_defi:
+    image: mongo:latest
+    container_name: mongodb_defi
+    environment:
+      - MONGO_DATA_DIR=/mongodb/db
+      - MONGO_LOG_DIR=/dev/null
+    volumes:
+      - .docker/mongodb:/mongodb/db
+      - ./mongo-entrypoint:/docker-entrypoint-initdb.d/
+    ports:
+      - 51133:27017
+    command: mongod --logpath=/dev/null # --quiet
+
+  dashboard_defi:
+    container_name: dashboard_defi
+    restart: always
+    build: .docker/dashboard
+    volumes:
+      - ./.docker/data:/usr/local/WB/data
+      - ./dashboard:/usr/local/WB/dashboard
+      - ./requirements.txt:/usr/local/WB/requirements.txt
+    links:
+      - mongodb_defi
+    ports:
+      - "5033:5033"

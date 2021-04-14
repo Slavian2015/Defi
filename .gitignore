@@ -1,0 +1,5 @@
+.idea
+.docker/data/pricing
+/venv/
+/.docker/mongodb/
+dashboard/Settings.py

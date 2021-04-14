@@ -1,0 +1,11 @@
+New data START:
+ethusdt
+bnbusdt
+ltcusdt
+dotusdt
+eosusdt
+trxusdt
+New data Fasa 2 : 1.6976102471351624
+New data FINISHED : 1.965396277109782
+Exception :
+ {'result': None, 'id': 1, 'unicorn_fied': ['binance.com', '0.7.0']}

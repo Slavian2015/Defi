@@ -1,0 +1,70 @@
+
+###########  PERMISSION DENIED ############################
+ sudo chmod -R 0777 .docker/data/
+ sudo chmod -R 0777 backtests/
+
+
+51.158.167.181:5005
+cd /var/www/BiBot/
+
+
+sudo docker-compose down
+sudo docker-compose build
+sudo docker-compose up -d dashboard_defi
+sudo docker-compose up -d dashboard_defi
+
+
+slavaku2014@gmail.com
+81b367303370225074282ed65460740b6f146ec7
+
+
+sudo docker exec -ti dashboard_defi bash
+###################################
+
+
+python /usr/local/WB/dashboard/app.py > /usr/local/WB/data/MOB_APP_log.txt 2>&1 &
+###################################
+python /usr/local/WB/dashboard/BOT_PARA.py > /usr/local/WB/data/BOT_PARA.txt 2>&1 &
+
+
+python /usr/local/WB/dashboard/dbrools.py
+###################################
+python /usr/local/WB/dashboard/my_class/my_parser.py
+
+
+
+ps aux | grep python
+
+
+python /usr/local/WB/dashboard/BOT.py
+
+============================================================
+python /usr/local/WB/dashboard/Orders.py
+
+python /usr/local/WB/dashboard/dbrools.py
+
+python /usr/local/WB/backtests/ETH_TEST/MOB_TEST.py
+
+python /usr/local/WB/backtests/test_15_min/MOB_TEST.py
+
+python /usr/local/WB/backtests/test_impuls/MOB_TEST.py
+
+python /usr/local/WB/backtests/test_impuls_sl/MOB_TEST.py
+
+python /usr/local/WB/backtests/test_predict/MOB_TEST.py
+
+python /usr/local/WB/backtests/PREDICT/mini.py
+
+python /usr/local/WB/backtests/slava_predict/slava_predict.py
+
+python /usr/local/WB/backtests/slava_predict/main.py
+
+python /usr/local/WB/backtests/BOT/bot_test.py
+
+python /usr/local/WB/backtests/BOT/BOT.py
+
+============================================================
+
+python /usr/local/WB/backtests/TIME_TEST/bot_test.py
+python /usr/local/WB/dashboard/BOT_DAY_2.py
+python /usr/local/WB/dashboard/TEST.py
