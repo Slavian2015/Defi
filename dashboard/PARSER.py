@@ -96,6 +96,8 @@ if __name__ == "__main__":
     binance_websocket_api_manager = BinanceWebSocketApiManager(exchange="binance.com", output_default="UnicornFy")
     binance_websocket_api_manager.create_stream(['kline_1m'], mk, stream_label="UnicornFy",
                                                 output="UnicornFy")
+    binance_websocket_api_manager.create_stream(['kline_1h'], mk, stream_label="UnicornFy",
+                                                output="UnicornFy")
     while True:
         if status:
             new_data()

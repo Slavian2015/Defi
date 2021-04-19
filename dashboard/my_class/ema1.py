@@ -67,14 +67,26 @@ class EmaBot:
 
     def place_new_order(self, direction):
         if direction == 1:
-            bot_message = f"Added new order UP {self.symbol} , \n{self.current_order_amount}, \n{round(float(self.my_ask_up), 4)},\n SL {round(float(self.my_sl), 4)} / TP {round(float(self.my_tp), 4)}"
+            print("====UP======\n",
+                  self.symbol,
+                  self.current_order_amount,
+                  self.my_ask_up,
+                  self.my_sl,
+                  self.my_tp)
+            bot_message = f"Added new order UP {self.symbol} , \n{self.current_order_amount}, \n{round(float(self.my_ask_up), 5)},\n SL {round(float(self.my_sl), 5)} / TP {round(float(self.my_tp), 5)}"
             bot_sendtext(bot_message)
-            print(bot_message)
+            print("\n", bot_message)
             self.order = direction
         else:
-            bot_message = f"Added new order DOWN {self.symbol} , \n{self.current_order_amount}, \n{round(float(self.my_ask_down), 4)},\n SL {round(float(self.my_sl), 4)} / TP {round(float(self.my_tp), 4)}"
+            print("====DOWN======\n",
+                  self.symbol,
+                  self.current_order_amount,
+                  self.my_ask_down,
+                  self.my_sl,
+                  self.my_tp)
+            bot_message = f"Added new order DOWN {self.symbol} , \n{self.current_order_amount}, \n{round(float(self.my_ask_down), 5)},\n SL {round(float(self.my_sl), 5)} / TP {round(float(self.my_tp), 5)}"
             bot_sendtext(bot_message)
-            print(bot_message)
+            print("\n", bot_message)
             self.order = direction
 
     def close_order(self, direction):
@@ -82,14 +94,14 @@ class EmaBot:
             rep = "STOP LOSS" if self.my_bid_up <= self.my_sl else "TAKE PROFIT"
             bot_message = f"QUIT order UP {self.symbol} , \n{self.current_order_amount * self.my_bid_up,}, \n{round(float(self.my_bid_up), 4)},\n {rep} \nSL {round(float(self.my_sl), 4)} / TP {round(float(self.my_tp), 4)}"
             bot_sendtext(bot_message)
-            print(bot_message)
+            print("\n", bot_message)
             self.order = False
             self.current_order_amount = 0
         else:
             rep = "STOP LOSS" if self.my_bid_down <= self.my_sl else "TAKE PROFIT"
             bot_message = f"QUIT order DOWN {self.symbol} , \n{self.current_order_amount * self.my_bid_down,}, \n{round(float(self.my_bid_down), 4)},\n {rep} \nSL {round(float(self.my_sl), 4)} / TP {round(float(self.my_tp), 4)}"
             bot_sendtext(bot_message)
-            print(bot_message)
+            print("\n", bot_message)
             self.order = False
             self.current_order_amount = 0
 
@@ -115,7 +127,8 @@ class EmaBot:
             elif df["close"].iloc[-1] >= df["ema100"].iloc[-1] >= df["close"].iloc[-2]:
                 self.my_touch = 0
                 self.my_breakout = 0
-            elif df["close"].iloc[-1] > df["ema25"].iloc[-1] > df["ema50"].iloc[-1] > df["ema100"].iloc[-1]:
+
+            if df["close"].iloc[-1] > df["ema25"].iloc[-1] > df["ema50"].iloc[-1] > df["ema100"].iloc[-1]:
                 self.my_touch = 1
             elif df["close"].iloc[-1] < df["ema25"].iloc[-1] < df["ema50"].iloc[-1] < df["ema100"].iloc[-1]:
                 self.my_touch = 2
@@ -137,9 +150,16 @@ class EmaBot:
                 self.wallet.append(df['close'].iloc[-1])
                 self.current_order_amount = self.amount / df['close'].iloc[-1] * 1.001
 
-                self.my_sl = self.my_bid_up * 0.98
-                self.my_tp = self.my_ask_up * 1.03
-
+                self.my_sl = float(self.my_bid_up) * 0.98
+                self.my_tp = float(self.my_ask_up) * 1.03
+                print("======  NEW ORDER  ==========\n",
+                      f"Price : {df['close'].iloc[-1]}\n",
+                      f"AMOUNT : {self.amount }\n",
+                      f"current_order_amount : {self.current_order_amount}\n",
+                      f"my_bid_up : {self.my_bid_up}\n",
+                      f"my_ask_up : {self.my_ask_up}\n",
+                      f"my_sl : {self.my_sl}\n",
+                      f"my_tp : {self.my_tp}\n")
                 self.place_new_order(self.my_breakout)
 
             elif df["close"].iloc[-1] < df["ema25"].iloc[-1] < df["ema50"].iloc[-1] < df["ema100"].iloc[-1] and \
@@ -148,9 +168,17 @@ class EmaBot:
                 self.wallet.append(df['close'].iloc[-1])
                 self.current_order_amount = self.amount / df['close'].iloc[-1] * 1.001
 
-                self.my_sl = self.my_bid_down * 0.98
-                self.my_tp = self.my_ask_down * 1.03
+                self.my_sl = float(self.my_bid_down) * 0.98
+                self.my_tp = float(self.my_ask_down) * 1.03
 
+                print("======  NEW ORDER  ==========\n",
+                      f"Price : {df['close'].iloc[-1]}\n",
+                      f"AMOUNT : {self.amount }\n",
+                      f"current_order_amount : {self.current_order_amount}\n",
+                      f"my_bid_down : {self.my_bid_down}\n",
+                      f"my_ask_down : {self.my_ask_down}\n",
+                      f"my_sl : {self.my_sl}\n",
+                      f"my_tp : {self.my_tp}\n")
                 self.place_new_order(self.my_breakout)
 
     def run(self):
@@ -194,9 +222,11 @@ class EmaBot:
                     if stream_buffer:
                         try:
                             if stream_buffer['event_type'] == "depth":
-                                if stream_buffer['symbol'] == f"{self.symbol}UPUSDT":
-                                    self.my_ask_up = stream_buffer['asks'][0][0]
-                                    self.my_bid_up = stream_buffer['bids'][0][0]
+                                if stream_buffer['symbol'] == f"{self.symbol.upper()}UPUSDT":
+                                    self.my_ask_up = float(stream_buffer['asks'][0][0])
+                                    self.my_bid_up = float(stream_buffer['bids'][0][0])
+
+                                    # print(f"{self.symbol.upper()}UPUSDT", self.my_bid_up)
 
                                     if self.order == 1:
                                         if self.my_bid_up <= self.my_sl:
@@ -204,9 +234,9 @@ class EmaBot:
                                         elif self.my_bid_up >= self.my_tp:
                                             self.close_order(self.order)
                                 else:
-                                    self.my_ask_down = stream_buffer['asks'][0][0]
-                                    self.my_bid_down = stream_buffer['bids'][0][0]
-
+                                    self.my_ask_down = float(stream_buffer['asks'][0][0])
+                                    self.my_bid_down = float(stream_buffer['bids'][0][0])
+                                    # print(f"{self.symbol.upper()}DOWNUSDT", self.my_bid_up)
                                     if self.order == 2:
                                         if self.my_bid_down <= self.my_sl:
                                             self.close_order(self.order)
@@ -244,7 +274,7 @@ class EmaBot:
 my_api = Settings.API_KEY
 my_secret = Settings.API_SECRET
 
-new_data = EmaBot("eth", 20, my_api, my_secret)
+new_data = EmaBot("eth", 100, my_api, my_secret)
 
 new_data.new_data_1_min()
 time.sleep(1)

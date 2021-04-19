@@ -39,7 +39,10 @@ ps aux | grep python
 python /usr/local/WB/dashboard/BOT.py
 
 ============================================================
-python /usr/local/WB/dashboard/Orders.py
+
+python /usr/local/WB/dashboard/my_class/ssrm.py
+
+python /usr/local/WB/dashboard/my_class/ema1.py
 
 python /usr/local/WB/dashboard/dbrools.py
 
