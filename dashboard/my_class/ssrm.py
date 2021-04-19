@@ -6,18 +6,28 @@ import traceback
 from datetime import datetime
 import warnings
 import talib as ta
+import logging
 from unicorn_fy.unicorn_fy import UnicornFy
 from time import strftime
 from unicorn_binance_websocket_api.unicorn_binance_websocket_api_manager import BinanceWebSocketApiManager
+import argparse
 
 sys.path.insert(0, r'/usr/local/WB/dashboard')
 import Settings
+import Orders
+import dbrools
+
 
 main_path_data = os.path.expanduser('/usr/local/WB/data/')
 warnings.filterwarnings("ignore")
 
 telega_api_key = Settings.TELEGA_KEY
 telega_api_secret = Settings.TELEGA_API
+parser = argparse.ArgumentParser()
+parser.add_argument('--symbol', help='bnb or link')
+parser.add_argument('--side', help='sell or buy')
+parser.add_argument('--amount', help='Amount')
+args = parser.parse_args()
 
 
 def bot_sendtext(bot_message):
@@ -80,25 +90,31 @@ class SsrmBot:
         if direction == 1:
             print("====UP======\n",
                   self.symbol,
-                  self.current_order_amount,
+                  self.amount,
                   self.my_ask,
                   self.my_sl,
                   self.my_tp)
-            bot_message = f"Added new order UP {self.symbol} , \n{self.current_order_amount}, \n{round(float(self.my_ask), 5)},\n SL {round(float(self.my_sl), 5)} / TP {round(float(self.my_tp), 5)}"
+            bot_message = f"Added new order UP {self.symbol} , \n{self.amount}, \n{round(float(self.my_ask), 5)},\n SL {round(float(self.my_sl), 5)} / TP {round(float(self.my_tp), 5)}"
             bot_sendtext(bot_message)
             print("\n", bot_message)
             self.order = direction
+            reponse = Orders.my_order(client=self.bclient, symbol=f"{self.symbol.upper()}UPUSDT", side=1, amount=self.amount)
+            logging.info(f"New order:\n {reponse}")
+            dbrools.insert_history(data=reponse)
         else:
             print("====DOWN======\n",
                   self.symbol,
-                  self.current_order_amount,
+                  self.amount,
                   self.my_ask,
                   self.my_sl,
                   self.my_tp)
-            bot_message = f"Added new order DOWN {self.symbol} , \n{self.current_order_amount}, \n{round(float(self.my_ask), 5)},\n SL {round(float(self.my_sl), 5)} / TP {round(float(self.my_tp), 5)}"
+            bot_message = f"Added new order DOWN {self.symbol} , \n{self.amount}, \n{round(float(self.my_ask), 5)},\n SL {round(float(self.my_sl), 5)} / TP {round(float(self.my_tp), 5)}"
             bot_sendtext(bot_message)
             print("\n", bot_message)
             self.order = direction
+            reponse = Orders.my_order(client=self.bclient, symbol=f"{self.symbol.upper()}DOWNUSDT", side=1, amount=self.amount)
+            logging.info(f"New order:\n {reponse}")
+            dbrools.insert_history(data=reponse)
 
     def close_order(self, direction):
         if direction == 1:
@@ -107,14 +123,18 @@ class SsrmBot:
             bot_sendtext(bot_message)
             print("\n", bot_message)
             self.order = False
-            self.current_order_amount = 0
+            reponse = Orders.my_order(client=self.bclient, symbol=f"{self.symbol.upper()}UPUSDT", side=2, amount=self.amount)
+            logging.info(f"New order:\n {reponse}")
+            dbrools.insert_history(data=reponse)
         else:
             rep = "STOP LOSS" if self.my_bid >= self.my_sl else "TAKE PROFIT"
             bot_message = f"QUIT order DOWN {self.symbol} , \n{self.current_order_amount * self.my_bid,}, \n{round(float(self.my_bid), 4)},\n {rep} \nSL {round(float(self.my_sl), 4)} / TP {round(float(self.my_tp), 4)}"
             bot_sendtext(bot_message)
             print("\n", bot_message)
             self.order = False
-            self.current_order_amount = 0
+            reponse = Orders.my_order(client=self.bclient, symbol=f"{self.symbol.upper()}DOWNUSDT", side=2, amount=self.amount)
+            logging.info(f"New order:\n {reponse}")
+            dbrools.insert_history(data=reponse)
 
         self.my_Stoch = False
         self.my_RSI = False
@@ -275,6 +295,8 @@ class SsrmBot:
                                 if stream_buffer['event_type'] == "kline":
                                     if stream_buffer['kline']['interval'] == "1m":
                                         if stream_buffer['event_time'] >= stream_buffer['kline']['kline_close_time']:
+
+                                            print("Price :", round(float(stream_buffer['kline']['close_price']), 2), self.my_ask, " | ", self.my_bid)
                                             new_row = [stream_buffer['kline']['kline_start_time'],
                                                        stream_buffer['kline']['open_price'],
                                                        stream_buffer['kline']['high_price'],
@@ -316,7 +338,8 @@ class SsrmBot:
 my_api = Settings.API_KEY
 my_secret = Settings.API_SECRET
 
-new_data = SsrmBot("eth", 100, my_api, my_secret, "buy")
+
+new_data = SsrmBot(args.symbol, float(args.amount), my_api, my_secret, args.side)
 
 new_data.new_data_1_hour()
 new_data.algorithm_supertrend()

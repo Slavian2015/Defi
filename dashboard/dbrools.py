@@ -1,8 +1,8 @@
 from pymongo import MongoClient, ASCENDING, DESCENDING
 
 # client = MongoClient('mongodb://137.220.59.5:51125')
-client = MongoClient('mongodb_bibot', 27017)
-db = client['BiBot']
+client = MongoClient('mongodb_defi', 27017)
+db = client['DeFi']
 my_data = db['Data']
 my_bal = db['Balance']
 my_history = db['History']
@@ -130,6 +130,6 @@ def create_full_data():
 
 # create_full_data()
 # create_balance()
-# print(get_my_balances())
+print(get_my_balances())
 # d = get_full_data()
 # print(d["data"]["ETHUSDT"])

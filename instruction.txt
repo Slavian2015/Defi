@@ -11,7 +11,7 @@ cd /var/www/BiBot/
 sudo docker-compose down
 sudo docker-compose build
 sudo docker-compose up -d dashboard_defi
-sudo docker-compose up -d dashboard_defi
+sudo docker-compose up -d mongodb_defi
 
 
 slavaku2014@gmail.com
@@ -39,7 +39,7 @@ ps aux | grep python
 python /usr/local/WB/dashboard/BOT.py
 
 ============================================================
-
+python /usr/local/WB/dashboard/my_class/ssrm.py --symbol="eth" --amount="0.09" --side="buy"
 python /usr/local/WB/dashboard/my_class/ssrm.py
 
 python /usr/local/WB/dashboard/my_class/ema1.py

@@ -1,29 +1,42 @@
-import math
-from binance.client import Client
 from binance.exceptions import BinanceAPIException, BinanceOrderException
-import Settings, dbrools
-import time, requests
-
-telega_api_key = Settings.TELEGA_KEY
-telega_api_secret = Settings.TELEGA_API
-
-api_key = Settings.API_KEY
-api_secret = Settings.API_SECRET
-client = Client(api_key, api_secret)
-
-symbols = ["XRP", "BTC", "ETH",
-           "TRX", "EOS", "BNB",
-           "LINK", "FIL", "YFI",
-           "DOT", "SXP", "UNI",
-           "LTC", "ADA", "AAVE"]
-full_list = ['XRPUPUSDT', 'XRPDOWNUSDT', 'BTCUPUSDT', 'BTCDOWNUSDT', 'ETHUPUSDT', 'ETHDOWNUSDT',
-             'TRXUPUSDT', 'TRXDOWNUSDT', 'EOSUPUSDT', 'EOSDOWNUSDT', 'BNBUPUSDT', 'BNBDOWNUSDT',
-             'LINKUPUSDT', 'LINKDOWNUSDT', 'FILUPUSDT', 'FILDOWNUSDT', 'YFIUPUSDT', 'YFIDOWNUSDT',
-             'DOTUPUSDT', 'DOTDOWNUSDT', 'SXPUPUSDT', 'SXPDOWNUSDT', 'UNIUPUSDT', 'UNIDOWNUSDT',
-             'LTCUPUSDT', 'LTCDOWNUSDT', 'ADAUPUSDT', 'ADADOWNUSDT', 'AAVEUPUSDT', 'AAVEDOWNUSDT']
+import dbrools
+import logging
 
 
-def my_order(symbol=None, side=None, amount=None, price=None):
+class CustomFormatter(logging.Formatter):
+    """Logging Formatter to add colors and count warning / errors"""
+
+    grey = "\x1b[38;21m"
+    yellow = "\x1b[33;21m"
+    red = "\x1b[31;21m"
+    bold_red = "\x1b[31;1m"
+    reset = "\x1b[0m"
+    format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s (%(filename)s:%(lineno)d)"
+
+    FORMATS = {
+        logging.DEBUG: grey + format + reset,
+        logging.INFO: grey + format + reset,
+        logging.WARNING: yellow + format + reset,
+        logging.ERROR: red + format + reset,
+        logging.CRITICAL: bold_red + format + reset
+    }
+
+    def format(self, record):
+        log_fmt = self.FORMATS.get(record.levelno)
+        formatter = logging.Formatter(log_fmt)
+        return formatter.format(record)
+
+
+logger = logging.getLogger("BD")
+logger.setLevel(logging.DEBUG)
+
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+ch.setFormatter(CustomFormatter())
+logger.addHandler(ch)
+
+
+def my_order(client=None, symbol=None, side=None, amount=None, price=None):
     my_reponse = {"error": False, "result": None}
     try:
         if price:
@@ -56,7 +69,7 @@ def my_order(symbol=None, side=None, amount=None, price=None):
     return my_reponse
 
 
-def my_open_orders():
+def my_open_orders(client=None):
     my_reponse = {"error": False,
                   "result": None}
 
@@ -70,32 +83,7 @@ def my_open_orders():
     return my_reponse
 
 
-def round_decimals_down(number: float, decimals: int = 2):
-    """
-    Returns a value rounded down to a specific number of decimal places.
-    """
-    if not isinstance(decimals, int):
-        raise TypeError("decimal places must be an integer")
-    elif decimals < 0:
-        raise ValueError("decimal places has to be 0 or more")
-    elif decimals == 0:
-        return math.floor(number)
-
-    factor = 10 ** decimals
-    return math.floor(number * factor) / factor
-
-
-#  ------------------------ ETHB ----------------------------
-
-def bot_sendtext(bot_message):
-    bot_token = telega_api_key
-    bot_chat_id = telega_api_secret
-    send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chat_id + '&parse_mode=Markdown&text=' + bot_message
-    requests.get(send_text)
-    return
-
-
-def my_balance():
+def my_balance(client=None):
     my_reponse = {"error": False,
                   "result": None}
     n = 0
@@ -123,7 +111,7 @@ def my_balance():
         except BinanceAPIException as e:
             n += 1
             error = e
-            bot_sendtext(f"(BiBoT) BALANCE error:\n {str(e)}")
+            logging.error(f"(DEfi) BALANCE error:\n {str(e)}")
 
     my_reponse["error"] = True
     my_reponse["result"] = error
