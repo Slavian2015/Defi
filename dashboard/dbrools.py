@@ -130,6 +130,6 @@ def create_full_data():
 
 # create_full_data()
 # create_balance()
-print(get_my_balances())
+# print(get_my_balances())
 # d = get_full_data()
 # print(d["data"]["ETHUSDT"])

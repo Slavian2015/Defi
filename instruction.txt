@@ -39,7 +39,7 @@ ps aux | grep python
 python /usr/local/WB/dashboard/BOT.py
 
 ============================================================
-python /usr/local/WB/dashboard/my_class/ssrm.py --symbol="eth" --amount="0.09" --side="buy"
+
 python /usr/local/WB/dashboard/my_class/ssrm.py
 
 python /usr/local/WB/dashboard/my_class/ema1.py
@@ -71,3 +71,20 @@ python /usr/local/WB/backtests/BOT/BOT.py
 python /usr/local/WB/backtests/TIME_TEST/bot_test.py
 python /usr/local/WB/dashboard/BOT_DAY_2.py
 python /usr/local/WB/dashboard/TEST.py
+
+
+=============================================================
+
+python /usr/local/WB/dashboard/my_class/ssrm.py --symbol="bnb" --amount="0.07" --side="buy"
+python /usr/local/WB/dashboard/my_class/ssrm.py --symbol="bnb" --amount="6" --side="sell"
+
+python /usr/local/WB/dashboard/my_class/ssrm.py --symbol="link" --amount="6" --side="buy"
+python /usr/local/WB/dashboard/my_class/ssrm.py --symbol="link" --amount="45" --side="sell"
+
+=============================================================
+
+python /usr/local/WB/dashboard/my_class/ssrm.py --symbol="bnb" --amount="0.03" --side="buy"
+python /usr/local/WB/dashboard/my_class/ssrm.py --symbol="bnb" --amount="3" --side="sell"
+
+python /usr/local/WB/dashboard/my_class/ssrm.py --symbol="link" --amount="3" --side="buy"
+python /usr/local/WB/dashboard/my_class/ssrm.py --symbol="link" --amount="22" --side="sell"
