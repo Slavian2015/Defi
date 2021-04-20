@@ -133,7 +133,7 @@ def trigger_by_modify(n1):
 
     if button_id[0] == 'interval_price':
         card = layouts.my_wallet()
-        return card
+        return [card]
     else:
         raise PreventUpdate
 

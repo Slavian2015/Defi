@@ -156,6 +156,10 @@ def get_active_data():
         d.append(i)
     return d
 
+# my_active.remove({})
+# create_active()
+# print(get_my_balances())
+
 # create_full_data()
 # create_balance()
 # print(get_my_balances())

@@ -14,7 +14,7 @@ sys.path.insert(0, r'/usr/local/WB')
 main_path_data = os.path.expanduser('/usr/local/WB/dashboard/assets/')
 main_path_data2 = os.path.expanduser('/usr/local/WB/data/')
 
-symbols = ["XRP", "BTC", "ETH",
+symbols = ["XRP", "BTC", "ETH", "USDT",
            "TRX", "EOS", "BNB",
            "LINK", "FIL", "YFI",
            "DOT", "SXP", "UNI",
@@ -196,6 +196,7 @@ def column_left():
 
     cont = [dbc.Row(style={"width": "100%",
                            "margin": "0",
+                           "margin-bottom": "50px",
                            "padding": "0"},
                     no_gutters=False,
                     children=form),
@@ -203,6 +204,8 @@ def column_left():
             dbc.Row(style={"width": "100%",
                            "margin": "0",
                            "padding": "0"},
+                    justify="center",
+                    align="center",
                     no_gutters=False,
                     children=sub_column_left()),
             ]
@@ -214,7 +217,7 @@ def sub_column_left():
     data = dbrools.get_active_data()
 
     cards = []
-
+    print(data, "\n\n")
     for k, v in enumerate(data):
         my_img = html.Img(style={"padding": "0",
                                  "margin": "0",
@@ -232,34 +235,37 @@ def sub_column_left():
             my_button = "STOP"
             my_button_color = "danger"
 
-        row = dbc.Row(style={"width": "100%",
+        row = dbc.Row(style={"width": "60%",
                              "margin": "0",
                              "padding": "0"},
                       no_gutters=False,
                       children=[
-                          dbc.Col(width=2, children=[
+                          dbc.Col(width=1, children=[
                               my_img
                           ]),
 
-                          dbc.Col(width=2, children=[
-                              html.H5(v["symbol"], id={"type": "symbol_name", "index": k})
+                          dbc.Col(width=1, children=[
+                              html.H5(v["symbol"],
+                                      # id={"type": "symbol_name", "index": k}
+                                      )
                           ]),
 
-                          dbc.Col(width=2, children=[
+                          dbc.Col(width=3, children=[
                               dbc.Badge(v["side"],
-                                        id={"type": "symbol_side", "index": k},
+                                        # id={"type": "symbol_side", "index": k},
                                         color="success" if v["side"] == "buy" else "danger", className="mr-1"),
                           ]),
 
                           dbc.Col(width=3, children=[
-                              dbc.Input(v["amount"],
+                              dbc.Input(type="number",
                                         id={"type": "symbol_amount", "index": k},
-                                        placeholder=v["amount"]),
+                                        # value=str(v["amount"])
+                                        ),
                           ]),
 
-                          dbc.Col(width=3, children=[
+                          dbc.Col(width=4, children=[
                               dbc.Button(my_button,
-                                         id={"type": "symbol_button", "index": k},
+                                         # id={"type": "symbol_button", "index": k},
                                          color=my_button_color),
                           ]),
 
@@ -271,10 +277,11 @@ def sub_column_left():
 
 
 def column_right():
-    interval = dcc.Interval(id='interval_price', interval=1000, n_intervals=0)
+    interval = dcc.Interval(id='interval_price', interval=5000, n_intervals=0)
     cont = [
         interval,
         dbc.Row(style={"width": "100%",
+                       "margin": "0",
                        "padding": "0"},
                 id="my_wallet_balance",
                 children=my_wallet()),
@@ -300,60 +307,59 @@ def column_right():
 
 
 def my_wallet():
-
     pic_cards = []
     balances = dbrools.get_my_balances()
 
     if balances:
+        # print(balances, "\n\n")
         for k, v in balances.items():
-            if k in symbols:
-                my_img = html.Img(style={"padding": "0",
-                                         "margin": "0",
-                                         "max_height": "25px",
-                                         "max-width": "25px"},
-                                  src='data:image/png;base64,{}'.format(
-                                      base64.b64encode(open(main_path_data + f'{k}.png', 'rb').read()).decode('ascii')))
-                my_col = dbc.Col(style={"textAlign": "center",
-                                        "margin": "0",
-                                        "padding": "0"},
-                                 width=4,
-                                 children=[
-                                     dbc.Button(children=dbc.Row(style={"width": "100%",
-                                                                        "margin": "0",
-                                                                        "padding": "0"},
-                                                                 className="no-scrollbars",
-                                                                 children=[
-                                                                     dbc.Col(style={"textAlign": "center",
-                                                                                    "margin": "0",
-                                                                                    "padding": "0"},
-                                                                             width=3,
-                                                                             children=my_img),
-                                                                     dbc.Col(style={"textAlign": "center",
-                                                                                    "margin": "0",
-                                                                                    "padding": "0"},
-                                                                             width=3,
-                                                                             children=k.upper()),
-                                                                     dbc.Col(style={"textAlign": "center",
-                                                                                    "margin": "0",
-                                                                                    "padding": "0"},
-                                                                             width=6,
-                                                                             children=html.H5("{0:.4f}".format(float(v))))
-                                                                 ]),
-                                                style={"min-width": "100%",
-                                                       "max-width": "100%",
-                                                       "margin": "1px",
-                                                       # "padding": "0"
-                                                       },
-                                                outline=True,
-                                                color="info")
-                                 ])
+            if k not in ["_id", "sku"]:
+                if float(v) > 0:
+                    if k in symbols:
+                        my_img = html.Img(style={"padding": "0",
+                                                 "margin": "0",
+                                                 "max_height": "20px",
+                                                 "max-width": "20px"},
+                                          src='data:image/png;base64,{}'.format(
+                                              base64.b64encode(open(main_path_data + f'{k}.png', 'rb').read()).decode(
+                                                  'ascii')))
+                    else:
+                        my_img = []
+                    my_col = dbc.Button(children=dbc.Row(style={"width": "100%",
+                                                                "margin": "0",
+                                                                "padding": "0"},
+                                                         className="no-scrollbars",
+                                                         children=[
+                                                             dbc.Col(style={"textAlign": "left",
+                                                                            "margin": "0",
+                                                                            "padding": "0"},
+                                                                     width=1,
+                                                                     children=my_img),
+                                                             dbc.Col(style={"textAlign": "right",
+                                                                            "margin": "0",
+                                                                            "padding": "0"},
+                                                                     width=4,
+                                                                     children=k.upper()),
+                                                             dbc.Col(style={"textAlign": "center",
+                                                                            "margin": "0",
+                                                                            "padding": "0"},
+                                                                     width=7,
+                                                                     children=html.P("{0:.3f}".format(float(v)),
+                                                                                     style={"color": "white",
+                                                                                            "margin": "0",
+                                                                                            "padding": "0"
+                                                                                            }))
+                                                         ]),
+                                        style={"min-width": "150px",
+                                               "max-width": "150px",
+                                               "margin": "1px",
+                                               # "padding": "0"
+                                               },
+                                        outline=True,
+                                        color="info")
+                    pic_cards.append(my_col)
 
-                pic_cards.append(my_col)
-
-    card = html.Div(
-        pic_cards
-    )
-    return card
+    return pic_cards
 
 
 def trade_history():
@@ -435,4 +441,3 @@ def my_trade_history():
         my_list.append(child)
 
     return my_list
-

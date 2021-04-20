@@ -1,7 +1,12 @@
 from binance.exceptions import BinanceAPIException, BinanceOrderException
 import dbrools
 import logging
+from binance.client import Client
 
+import Settings
+api_key = Settings.API_KEY
+api_secret = Settings.API_SECRET
+bclient = Client(api_key=api_key, api_secret=api_secret)
 
 class CustomFormatter(logging.Formatter):
     """Logging Formatter to add colors and count warning / errors"""
@@ -83,7 +88,7 @@ def my_open_orders(client=None):
     return my_reponse
 
 
-def my_balance(client=None):
+def my_balance(client=bclient):
     my_reponse = {"error": False,
                   "result": None}
     n = 0
