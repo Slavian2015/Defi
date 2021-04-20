@@ -6,6 +6,7 @@ db = client['DeFi']
 my_data = db['Data']
 my_bal = db['Balance']
 my_history = db['History']
+my_active = db['Active']
 
 full_data = db['DataFull']
 
@@ -127,6 +128,33 @@ def create_full_data():
     insert_document(full_data, data)
     return
 
+
+def create_active():
+    symbols = ["XRP", "BTC", "ETH",
+               "TRX", "EOS", "BNB",
+               "LINK", "FIL", "YFI",
+               "DOT", "SXP", "UNI",
+               "LTC", "ADA", "AAVE"]
+
+    for i in symbols:
+        for k in ['buy', 'sell']:
+            data = {
+                "symbol": i,
+                "side": k,
+                "amount": 0,
+                "process": 0
+            }
+            insert_document(my_active, data)
+    return
+
+
+def get_active_data():
+
+    d = []
+
+    for i in my_active.find():
+        d.append(i)
+    return d
 
 # create_full_data()
 # create_balance()
