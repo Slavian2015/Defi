@@ -6,14 +6,17 @@ from datetime import datetime
 import warnings
 
 warnings.filterwarnings("ignore")
-import Settings
+import dbrools
 
-api_key = Settings.API_KEY
-api_secret = Settings.API_SECRET
+
+new_keys = dbrools.my_keys.find_one()
+
+telega_api_key = new_keys['telega']['key']
+telega_api_secret = new_keys['telega']['secret']
+api_key = new_keys['bin']['key']
+api_secret = new_keys['bin']['secret']
 bclient = Client(api_key=api_key, api_secret=api_secret)
 
-telega_api_key = Settings.TELEGA_KEY
-telega_api_secret = Settings.TELEGA_API
 
 sys.path.insert(0, r'/usr/local/WB')
 main_path_data = os.path.expanduser('/usr/local/WB/data/')

@@ -13,7 +13,6 @@ from unicorn_binance_websocket_api.unicorn_binance_websocket_api_manager import 
 import argparse
 
 sys.path.insert(0, r'/usr/local/WB/dashboard')
-import Settings
 import Orders
 import dbrools
 
@@ -21,8 +20,7 @@ import dbrools
 main_path_data = os.path.expanduser('/usr/local/WB/data/')
 warnings.filterwarnings("ignore")
 
-telega_api_key = Settings.TELEGA_KEY
-telega_api_secret = Settings.TELEGA_API
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--symbol', help='bnb or link')
 parser.add_argument('--side', help='sell or buy')
@@ -100,7 +98,17 @@ class SsrmBot:
             self.order = direction
             reponse = Orders.my_order(client=self.bclient, symbol=f"{self.symbol.upper()}UPUSDT", side=1, amount=self.amount)
             logging.info(f"New order:\n {reponse}")
-            dbrools.insert_history(data=reponse)
+            dbrools.insert_history_new(data=reponse)
+
+            data = {
+                "symbol": f"{self.symbol}UP",
+                "amount": self.amount,
+                "price": self.my_ask,
+                "direct": 'BUY',
+                "date": f"{datetime.now().strftime('%d.%m.%Y')}"
+            }
+            dbrools.insert_history(data=data)
+
         else:
             print("====DOWN======\n",
                   self.symbol,
@@ -114,7 +122,17 @@ class SsrmBot:
             self.order = direction
             reponse = Orders.my_order(client=self.bclient, symbol=f"{self.symbol.upper()}DOWNUSDT", side=1, amount=self.amount)
             logging.info(f"New order:\n {reponse}")
-            dbrools.insert_history(data=reponse)
+            dbrools.insert_history_new(data=reponse)
+
+            data = {
+                "symbol": f"{self.symbol}DOWN",
+                "amount": self.amount,
+                "price": self.my_ask,
+                "direct": 'BUY',
+                "date": f"{datetime.now().strftime('%d.%m.%Y')}"
+            }
+            dbrools.insert_history(data=data)
+
 
     def close_order(self, direction):
         if direction == 1:
@@ -125,7 +143,17 @@ class SsrmBot:
             self.order = False
             reponse = Orders.my_order(client=self.bclient, symbol=f"{self.symbol.upper()}UPUSDT", side=2, amount=self.amount)
             logging.info(f"New order:\n {reponse}")
-            dbrools.insert_history(data=reponse)
+            dbrools.insert_history_new(data=reponse)
+
+            data = {
+                "symbol": f"{self.symbol}UP",
+                "amount": self.amount,
+                "price": self.my_bid,
+                "direct": 'SELL',
+                "date": f"{datetime.now().strftime('%d.%m.%Y')}"
+            }
+            dbrools.insert_history(data=data)
+
         else:
             rep = "STOP LOSS" if self.my_bid >= self.my_sl else "TAKE PROFIT"
             bot_message = f"QUIT order DOWN {self.symbol} , \n{self.current_order_amount * self.my_bid,}, \n{round(float(self.my_bid), 4)},\n {rep} \nSL {round(float(self.my_sl), 4)} / TP {round(float(self.my_tp), 4)}"
@@ -134,7 +162,16 @@ class SsrmBot:
             self.order = False
             reponse = Orders.my_order(client=self.bclient, symbol=f"{self.symbol.upper()}DOWNUSDT", side=2, amount=self.amount)
             logging.info(f"New order:\n {reponse}")
-            dbrools.insert_history(data=reponse)
+            dbrools.insert_history_new(data=reponse)
+
+            data = {
+                "symbol": f"{self.symbol}DOWN",
+                "amount": self.amount,
+                "price": self.my_bid,
+                "direct": 'SELL',
+                "date": f"{datetime.now().strftime('%d.%m.%Y')}"
+            }
+            dbrools.insert_history(data=data)
 
         self.my_Stoch = False
         self.my_RSI = False
@@ -335,11 +372,15 @@ class SsrmBot:
                     time.sleep(30)
 
 
-my_api = Settings.API_KEY
-my_secret = Settings.API_SECRET
+new_keys = dbrools.my_keys.find_one()
+
+telega_api_key = new_keys['telega']['key']
+telega_api_secret = new_keys['telega']['secret']
+api_key = new_keys['bin']['key']
+api_secret = new_keys['bin']['secret']
 
 
-new_data = SsrmBot(args.symbol, float(args.amount), my_api, my_secret, args.side)
+new_data = SsrmBot(args.symbol, float(args.amount), api_key, api_secret, args.side)
 
 new_data.new_data_1_hour()
 new_data.algorithm_supertrend()

@@ -178,34 +178,78 @@ def column_left():
             dbc.FormGroup(
                 [
                     dbc.Label("API_key", className="mr-2"),
-                    dbc.Input(type="text", id="example-api-key", placeholder="Enter API-key"),
+                    dbc.Input(type="password", id="example-api-key_bin", placeholder="Enter API-key"),
                 ],
                 className="mr-3",
             ),
             dbc.FormGroup(
                 [
                     dbc.Label("API_secret", className="mr-2"),
-                    dbc.Input(type="text", id="example-api-secret", placeholder="Enter API-secret"),
+                    dbc.Input(type="password", id="example-api-secret_bin", placeholder="Enter API-secret"),
                 ],
                 className="mr-3",
             ),
-            dbc.Button("Сохранить", id="save_api", color="primary"),
+            dbc.Button("Сохранить Binance", id="save_api_bin", color="primary"),
+            dbc.Toast(
+                [html.P("Done !")],
+                id="save_api_bin_toast",
+                is_open=False,
+                icon="info",
+                style={"position": "fixed", "top": 200, "right": 1200, "width": 250},
+                duration=2000,
+            ),
         ],
         inline=True,
     )
 
-    cont = [dbc.Row(style={"width": "100%",
+    form2 = dbc.Form(
+        [
+            dbc.FormGroup(
+                [
+                    dbc.Label("API_key", className="mr-2"),
+                    dbc.Input(type="password", id="example-api-key_telega", placeholder="Enter API-key"),
+                ],
+                className="mr-3",
+            ),
+            dbc.FormGroup(
+                [
+                    dbc.Label("API_secret", className="mr-2"),
+                    dbc.Input(type="password", id="example-api-secret_telega", placeholder="example.: 494797976"),
+                ],
+                className="mr-3",
+            ),
+            dbc.Button("Сохранить Telegram", id="save_api_telega", color="primary"),
+            dbc.Toast(
+                [html.P("Done !")],
+                id="save_api_telega_toast",
+                is_open=False,
+                icon="info",
+                style={"position": "fixed", "top": 200, "right": 1200, "width": 250},
+                duration=2000,
+            ),
+        ],
+        inline=True,
+    )
+
+    cont = [
+        dbc.Row(style={"width": "100%",
+                           "margin": "0",
+                           "margin-bottom": "5px",
+                           "padding": "0"},
+                    no_gutters=False,
+                    children=form),
+            dbc.Row(style={"width": "100%",
                            "margin": "0",
                            "margin-bottom": "50px",
                            "padding": "0"},
                     no_gutters=False,
-                    children=form),
-
+                    children=form2),
             dbc.Row(style={"width": "100%",
                            "margin": "0",
                            "padding": "0"},
                     justify="center",
                     align="center",
+                    id="new_left_side",
                     no_gutters=False,
                     children=sub_column_left()),
             ]
@@ -217,7 +261,7 @@ def sub_column_left():
     data = dbrools.get_active_data()
 
     cards = []
-    print(data, "\n\n")
+    # print(data, "\n\n")
     for k, v in enumerate(data):
         my_img = html.Img(style={"padding": "0",
                                  "margin": "0",
@@ -246,26 +290,26 @@ def sub_column_left():
 
                           dbc.Col(width=1, children=[
                               html.H5(v["symbol"],
-                                      # id={"type": "symbol_name", "index": k}
+                                      id={"type": "symbol_name", "index": k}
                                       )
                           ]),
 
                           dbc.Col(width=3, children=[
                               dbc.Badge(v["side"],
-                                        # id={"type": "symbol_side", "index": k},
+                                        id={"type": "symbol_side", "index": k},
                                         color="success" if v["side"] == "buy" else "danger", className="mr-1"),
                           ]),
 
                           dbc.Col(width=3, children=[
                               dbc.Input(type="number",
                                         id={"type": "symbol_amount", "index": k},
-                                        # value=str(v["amount"])
+                                        value=float(v["amount"])
                                         ),
                           ]),
 
                           dbc.Col(width=4, children=[
                               dbc.Button(my_button,
-                                         # id={"type": "symbol_button", "index": k},
+                                         id={"type": "symbol_button", "index": k},
                                          color=my_button_color),
                           ]),
 
@@ -299,6 +343,7 @@ def column_right():
                        "overflowY": "scroll",
                        "margin": "0",
                        "padding": "0"},
+                id="new_trade_history",
                 className="no-scrollbars",
                 children=trade_history()),
     ]

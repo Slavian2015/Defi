@@ -1,0 +1,1 @@
+PARSER (kline) START at 15:30:19
