@@ -472,7 +472,7 @@ def my_trade_history():
 
     for v in reversed(items):
         child = html.Tr([
-            html.Th([html.H5(v["symbol"], style={"min-width": "70px"})], style={"padding": "0", "margin": "0"}),
+            html.Th([html.P(v["symbol"], style={"min-width": "70px"})], style={"padding": "0", "margin": "0"}),
             html.Th([html.P("{0:.3f}".format(float(v["amount"])), style={"min-width": "70px"})],
                     style={"padding": "0", "margin": "0"}),
             html.Th([html.P("{0:.3f}".format(float(v["price"])), style={"min-width": "70px"})],
