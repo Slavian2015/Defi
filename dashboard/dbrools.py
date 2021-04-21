@@ -211,10 +211,8 @@ def update_tel_keys(new_key, new_secret):
 
 # t = my_keys.find_one()
 # print(t['bin'])
-create_keys()
-create_active()
-create_balance()
-create_full_data()
+
+
 
 
 # print([i for i in my_keys.find()])
@@ -240,3 +238,15 @@ create_full_data()
 # print(get_my_balances())
 # d = get_full_data()
 # print(d["data"]["ETHUSDT"])
+
+
+
+my_active.remove({})
+my_keys.remove({})
+my_bal.remove({})
+full_data.remove({})
+
+create_keys()
+create_active()
+create_balance()
+create_full_data()

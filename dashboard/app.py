@@ -91,8 +91,16 @@ def trigger_balance(n1):
     button_id = ctx.triggered[0]['prop_id'].split('.')
     if button_id[0] == 'balance_btn':
         new_keys = dbrools.my_keys.find_one()
+        print(new_keys)
         api_key = new_keys['bin']['key']
         api_secret = new_keys['bin']['secret']
+
+
+
+
+        print(api_key)
+        print(api_secret)
+
         bclient = Client(api_key=api_key, api_secret=api_secret)
 
         Orders.my_balance(client=bclient)
@@ -129,9 +137,9 @@ def trigger_balance(n1, api_key, api_secret):
     button_id = ctx.triggered[0]['prop_id'].split('.')
     if button_id[0] == 'save_api_bin':
         if not api_key or not api_secret:
-            dbrools.update_tel_keys(0, 0)
+            dbrools.update_bin_keys(0, 0)
         else:
-            dbrools.update_tel_keys(api_key, api_secret)
+            dbrools.update_bin_keys(api_key, api_secret)
         return [True]
     else:
         raise PreventUpdate

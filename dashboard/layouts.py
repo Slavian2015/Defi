@@ -38,7 +38,13 @@ def content():
     encoded_image = base64.b64encode(open(main_path_data + 'UserW.png', 'rb').read()).decode('ascii')
 
     balance_full = dbrools.get_my_balances()
-    balance = "{0:.2f} $".format(float(balance_full["USDT"]))
+
+    if balance_full:
+        balance = "{0:.2f} $".format(float(balance_full["USDT"]))
+    else:
+        balance = "0"
+
+    # print(balance_full, "\n\n")
 
     cont = [
         dbc.Row(style={"width": "100%",
