@@ -211,7 +211,12 @@ def update_tel_keys(new_key, new_secret):
 
 # t = my_keys.find_one()
 # print(t['bin'])
-# create_keys()
+create_keys()
+create_active()
+create_balance()
+create_full_data()
+
+
 # print([i for i in my_keys.find()])
 
 
@@ -227,7 +232,7 @@ def update_tel_keys(new_key, new_secret):
 
 
 # my_active.remove({})
-# create_active()
+
 # print(get_my_balances())
 # create_keys()
 # create_full_data()

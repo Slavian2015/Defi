@@ -11,6 +11,7 @@ import subprocess
 import threading
 import warnings
 import dbrools
+from binance.client import Client
 from datetime import datetime
 
 warnings.filterwarnings("ignore")
@@ -89,7 +90,12 @@ def trigger_balance(n1):
     ctx = dash.callback_context
     button_id = ctx.triggered[0]['prop_id'].split('.')
     if button_id[0] == 'balance_btn':
-        Orders.my_balance()
+        new_keys = dbrools.my_keys.find_one()
+        api_key = new_keys['bin']['key']
+        api_secret = new_keys['bin']['secret']
+        bclient = Client(api_key=api_key, api_secret=api_secret)
+
+        Orders.my_balance(client=bclient)
         repons = dbrools.get_my_balances()
         return ["{0:.2f} $".format(float(repons['USDT']))]
     else:
@@ -165,7 +171,7 @@ def toggle_modal(n1, amount, side, symbol, old_btn):
     if not button:
         raise PreventUpdate
     else:
-        print(amount, side, symbol, old_btn)
+        # print(amount, side, symbol, old_btn)
 
         if type(button) is str:
             button = json.loads(button.replace("'", "\""))
