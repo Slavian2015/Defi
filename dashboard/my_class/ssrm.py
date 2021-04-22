@@ -53,7 +53,7 @@ class SsrmBot:
         self.my_bid = 0
 
         self.status = False
-        self.min_amount = float(min_amount)
+        self.min_amount = min_amount
         self.amount = 0
         self.main_direction = my_direction
         self.wallet = []
@@ -324,7 +324,7 @@ class SsrmBot:
                     if stream_buffer:
                         try:
                             if stream_buffer['event_type'] == "depth":
-                                if stream_buffer['symbol'] == f'{self.symbol}usdt':
+                                if stream_buffer['symbol'] == f'{self.symbol}usdt'.upper():
                                     self.my_ask = float(stream_buffer['asks'][0][0])
                                     self.my_bid = float(stream_buffer['bids'][0][0])
 
@@ -338,7 +338,7 @@ class SsrmBot:
                                             self.close_order(self.order)
                                         elif self.my_bid <= self.my_tp:
                                             self.close_order(self.order)
-                                elif stream_buffer['symbol'] == f'{self.symbol}upusdt' and self.main_direction == "buy":
+                                elif stream_buffer['symbol'] == f'{self.symbol}upusdt'.upper() and self.main_direction == "buy":
                                     self.amount = self.min_amount / float(stream_buffer['asks'][0][0])
                                 elif stream_buffer['symbol'] == f'{self.symbol}downusdt' and self.main_direction == "sell":
                                     self.amount = self.min_amount / float(stream_buffer['asks'][0][0])
