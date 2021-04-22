@@ -241,12 +241,57 @@ def update_tel_keys(new_key, new_secret):
 
 
 
-my_active.remove({})
-my_keys.remove({})
-my_bal.remove({})
-full_data.remove({})
+# my_active.remove({})
+# my_keys.remove({})
+# my_bal.remove({})
+# full_data.remove({})
+#
+# create_keys()
+# create_active()
+# create_balance()
+# create_full_data()
 
-create_keys()
-create_active()
-create_balance()
-create_full_data()
+from datetime import datetime
+#
+# data = {
+#     "symbol": f"XXXUP",
+#     "amount": 1212,
+#     "price": 121,
+#     "direct": 'BUY',
+#     "result": 0,
+#     "date": f"{datetime.now().strftime('%d.%m.%Y')}"
+# }
+# insert_history(data=data)
+#
+# time.sleep(1)
+#
+# data = {
+#     "symbol": f"XXXUP",
+#     "amount": 1212,
+#     "price": 121,
+#     "direct": 'SELL',
+#     "result": 1,
+#     "date": f"{datetime.now().strftime('%d.%m.%Y')}"
+# }
+# insert_history(data=data)
+#
+# time.sleep(1)
+#
+# data = {
+#     "symbol": f"XXXUP",
+#     "amount": 1212,
+#     "price": 121,
+#     "direct": 'BUY',
+#     "result": 0,
+#     "date": f"{datetime.now().strftime('%d.%m.%Y')}"
+# }
+# insert_history(data=data)
+# time.sleep(1)
+# data = {
+#     "symbol": f"XXXUP",
+#     "amount": 1212,
+#     "price": 121,
+#     "direct": 'SELL',
+#     "date": f"{datetime.now().strftime('%d.%m.%Y')}"
+# }
+# insert_history(data=data)

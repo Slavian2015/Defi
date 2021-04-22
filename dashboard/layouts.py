@@ -477,6 +477,16 @@ def my_trade_history():
         ]
 
     for v in reversed(items):
+        try:
+            if v["result"] == 1:
+                new_color = "red"
+            elif v["result"] == 2:
+                new_color = "green"
+            else:
+                new_color = 'transparent'
+        except KeyError:
+            new_color = 'transparent'
+
         child = html.Tr([
             html.Th([html.P(v["symbol"], style={"min-width": "70px"})], style={"padding": "0", "margin": "0"}),
             html.Th([html.P("{0:.3f}".format(float(v["amount"])), style={"min-width": "70px"})],
@@ -487,7 +497,7 @@ def my_trade_history():
                                color="success" if v["direct"] == "BUY" else "danger")],
                     style={"padding": "0", "margin": "0"}),
             html.Th([html.P(v["date"], style={"min-width": "70px"})], style={"padding": "0", "margin": "0"}),
-        ])
+        ], style={"background-color": new_color})
 
         my_list.append(child)
 

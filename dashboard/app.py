@@ -91,15 +91,8 @@ def trigger_balance(n1):
     button_id = ctx.triggered[0]['prop_id'].split('.')
     if button_id[0] == 'balance_btn':
         new_keys = dbrools.my_keys.find_one()
-        print(new_keys)
         api_key = new_keys['bin']['key']
         api_secret = new_keys['bin']['secret']
-
-
-
-
-        print(api_key)
-        print(api_secret)
 
         bclient = Client(api_key=api_key, api_secret=api_secret)
 

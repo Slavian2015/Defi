@@ -53,10 +53,9 @@ class SsrmBot:
         self.my_bid = 0
 
         self.status = False
-        self.amount = min_amount
+        self.min_amount = float(min_amount)
+        self.amount = 0
         self.main_direction = my_direction
-
-        self.current_order_amount = 0
         self.wallet = []
         self.order = False
 
@@ -88,23 +87,24 @@ class SsrmBot:
         if direction == 1:
             print("====UP======\n",
                   self.symbol,
-                  self.amount,
+                  round(self.amount, 2),
                   self.my_ask,
                   self.my_sl,
                   self.my_tp)
-            bot_message = f"Added new order UP {self.symbol} , \n{self.amount}, \n{round(float(self.my_ask), 5)},\n SL {round(float(self.my_sl), 5)} / TP {round(float(self.my_tp), 5)}"
+            bot_message = f"Added new order UP {self.symbol} , \n{round(self.amount, 2)}, \n{round(float(self.my_ask), 5)},\n SL {round(float(self.my_sl), 5)} / TP {round(float(self.my_tp), 5)}"
             bot_sendtext(bot_message)
             print("\n", bot_message)
             self.order = direction
-            reponse = Orders.my_order(client=self.bclient, symbol=f"{self.symbol.upper()}UPUSDT", side=1, amount=self.amount)
+            reponse = Orders.my_order(client=self.bclient, symbol=f"{self.symbol.upper()}UPUSDT", side=1, amount=round(self.amount, 2))
             logging.info(f"New order:\n {reponse}")
             dbrools.insert_history_new(data=reponse)
 
             data = {
                 "symbol": f"{self.symbol}UP",
-                "amount": self.amount,
+                "amount": round(self.amount, 2),
                 "price": self.my_ask,
                 "direct": 'BUY',
+                "result": 0,
                 "date": f"{datetime.now().strftime('%d.%m.%Y')}"
             }
             dbrools.insert_history(data=data)
@@ -112,63 +112,65 @@ class SsrmBot:
         else:
             print("====DOWN======\n",
                   self.symbol,
-                  self.amount,
+                  round(self.amount, 2),
                   self.my_ask,
                   self.my_sl,
                   self.my_tp)
-            bot_message = f"Added new order DOWN {self.symbol} , \n{self.amount}, \n{round(float(self.my_ask), 5)},\n SL {round(float(self.my_sl), 5)} / TP {round(float(self.my_tp), 5)}"
+            bot_message = f"Added new order DOWN {self.symbol} , \n{round(self.amount, 2)}, \n{round(float(self.my_ask), 5)},\n SL {round(float(self.my_sl), 5)} / TP {round(float(self.my_tp), 5)}"
             bot_sendtext(bot_message)
             print("\n", bot_message)
             self.order = direction
-            reponse = Orders.my_order(client=self.bclient, symbol=f"{self.symbol.upper()}DOWNUSDT", side=1, amount=self.amount)
+            reponse = Orders.my_order(client=self.bclient, symbol=f"{self.symbol.upper()}DOWNUSDT", side=1, amount=round(self.amount, 2))
             logging.info(f"New order:\n {reponse}")
             dbrools.insert_history_new(data=reponse)
 
             data = {
                 "symbol": f"{self.symbol}DOWN",
-                "amount": self.amount,
+                "amount": round(self.amount, 2),
                 "price": self.my_ask,
                 "direct": 'BUY',
+                "result": 0,
                 "date": f"{datetime.now().strftime('%d.%m.%Y')}"
             }
             dbrools.insert_history(data=data)
 
-
     def close_order(self, direction):
         if direction == 1:
             rep = "STOP LOSS" if self.my_bid <= self.my_sl else "TAKE PROFIT"
-            bot_message = f"QUIT order UP {self.symbol} , \n{self.current_order_amount * self.my_bid,}, \n{round(float(self.my_bid), 4)},\n {rep} \nSL {round(float(self.my_sl), 4)} / TP {round(float(self.my_tp), 4)}"
+            bot_message = f"QUIT order UP {self.symbol} , \n{round(self.amount, 2)}, \n{round(float(self.my_bid), 4)},\n {rep} \nSL {round(float(self.my_sl), 4)} / TP {round(float(self.my_tp), 4)}"
             bot_sendtext(bot_message)
             print("\n", bot_message)
             self.order = False
-            reponse = Orders.my_order(client=self.bclient, symbol=f"{self.symbol.upper()}UPUSDT", side=2, amount=self.amount)
+            reponse = Orders.my_order(client=self.bclient, symbol=f"{self.symbol.upper()}UPUSDT", side=2, amount=round(self.amount, 2))
             logging.info(f"New order:\n {reponse}")
             dbrools.insert_history_new(data=reponse)
 
             data = {
                 "symbol": f"{self.symbol}UP",
-                "amount": self.amount,
+                "amount": round(self.amount, 2),
                 "price": self.my_bid,
                 "direct": 'SELL',
+                "result": 1 if self.my_bid <= self.my_sl else 2,
                 "date": f"{datetime.now().strftime('%d.%m.%Y')}"
             }
             dbrools.insert_history(data=data)
 
         else:
             rep = "STOP LOSS" if self.my_bid >= self.my_sl else "TAKE PROFIT"
-            bot_message = f"QUIT order DOWN {self.symbol} , \n{self.current_order_amount * self.my_bid,}, \n{round(float(self.my_bid), 4)},\n {rep} \nSL {round(float(self.my_sl), 4)} / TP {round(float(self.my_tp), 4)}"
+            bot_message = f"QUIT order DOWN {self.symbol} , \n{round(self.amount, 2)}, \n{round(float(self.my_bid), 4)},\n {rep} \nSL {round(float(self.my_sl), 4)} / TP {round(float(self.my_tp), 4)}"
             bot_sendtext(bot_message)
             print("\n", bot_message)
             self.order = False
-            reponse = Orders.my_order(client=self.bclient, symbol=f"{self.symbol.upper()}DOWNUSDT", side=2, amount=self.amount)
+            reponse = Orders.my_order(client=self.bclient, symbol=f"{self.symbol.upper()}DOWNUSDT", side=2, amount=round(self.amount, 2))
             logging.info(f"New order:\n {reponse}")
             dbrools.insert_history_new(data=reponse)
 
             data = {
                 "symbol": f"{self.symbol}DOWN",
-                "amount": self.amount,
+                "amount": round(self.amount, 2),
                 "price": self.my_bid,
                 "direct": 'SELL',
+                "result": 1 if self.my_bid >= self.my_sl else 2,
                 "date": f"{datetime.now().strftime('%d.%m.%Y')}"
             }
             dbrools.insert_history(data=data)
@@ -293,6 +295,10 @@ class SsrmBot:
                                                     [f'{self.symbol}usdt'],
                                                     stream_label="UnicornFy",
                                                     output="UnicornFy")
+        binance_websocket_api_manager.create_stream(['depth5'],
+                                                    [f'{self.symbol}upusdt', f'{self.symbol}downusdt'],
+                                                    stream_label="UnicornFy",
+                                                    output="UnicornFy")
 
         while True:
             if self.status:
@@ -300,6 +306,10 @@ class SsrmBot:
 
                 binance_websocket_api_manager.create_stream(['kline_1m', 'kline_1h', 'depth5'],
                                                             [f'{self.symbol}usdt'],
+                                                            stream_label="UnicornFy",
+                                                            output="UnicornFy")
+                binance_websocket_api_manager.create_stream(['depth5'],
+                                                            [f'{self.symbol}upusdt', f'{self.symbol}downusdt'],
                                                             stream_label="UnicornFy",
                                                             output="UnicornFy")
 
@@ -314,26 +324,29 @@ class SsrmBot:
                     if stream_buffer:
                         try:
                             if stream_buffer['event_type'] == "depth":
-                                self.my_ask = float(stream_buffer['asks'][0][0])
-                                self.my_bid = float(stream_buffer['bids'][0][0])
+                                if stream_buffer['symbol'] == f'{self.symbol}usdt':
+                                    self.my_ask = float(stream_buffer['asks'][0][0])
+                                    self.my_bid = float(stream_buffer['bids'][0][0])
 
-                                if self.order == 1:
-                                    if self.my_bid <= self.my_sl:
-                                        self.close_order(self.order)
-                                    elif self.my_bid >= self.my_tp:
-                                        self.close_order(self.order)
-                                elif self.order == 2:
-                                    if self.my_bid >= self.my_sl:
-                                        self.close_order(self.order)
-                                    elif self.my_bid <= self.my_tp:
-                                        self.close_order(self.order)
+                                    if self.order == 1:
+                                        if self.my_bid <= self.my_sl:
+                                            self.close_order(self.order)
+                                        elif self.my_bid >= self.my_tp:
+                                            self.close_order(self.order)
+                                    elif self.order == 2:
+                                        if self.my_bid >= self.my_sl:
+                                            self.close_order(self.order)
+                                        elif self.my_bid <= self.my_tp:
+                                            self.close_order(self.order)
+                                elif stream_buffer['symbol'] == f'{self.symbol}upusdt' and self.main_direction == "buy":
+                                    self.amount = self.min_amount / float(stream_buffer['asks'][0][0])
+                                elif stream_buffer['symbol'] == f'{self.symbol}downusdt' and self.main_direction == "sell":
+                                    self.amount = self.min_amount / float(stream_buffer['asks'][0][0])
 
                             else:
                                 if stream_buffer['event_type'] == "kline":
                                     if stream_buffer['kline']['interval'] == "1m":
                                         if stream_buffer['event_time'] >= stream_buffer['kline']['kline_close_time']:
-
-                                            print("Price :", round(float(stream_buffer['kline']['close_price']), 2), self.my_ask, " | ", self.my_bid)
                                             new_row = [stream_buffer['kline']['kline_start_time'],
                                                        stream_buffer['kline']['open_price'],
                                                        stream_buffer['kline']['high_price'],
