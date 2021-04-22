@@ -338,9 +338,9 @@ class SsrmBot:
                                             self.close_order(self.order)
                                         elif self.my_bid <= self.my_tp:
                                             self.close_order(self.order)
-                                elif stream_buffer['symbol'] == f'{self.symbol}upusdt'.upper() and self.main_direction == "buy":
+                                elif stream_buffer['symbol'] == f'{self.symbol}upusdt'.upper() and self.main_direction == "buy" and not self.order:
                                     self.amount = self.min_amount / float(stream_buffer['asks'][0][0])
-                                elif stream_buffer['symbol'] == f'{self.symbol}downusdt' and self.main_direction == "sell":
+                                elif stream_buffer['symbol'] == f'{self.symbol}downusdt' and self.main_direction == "sell" and not self.order:
                                     self.amount = self.min_amount / float(stream_buffer['asks'][0][0])
 
                             else:
