@@ -13,110 +13,176 @@ from unicorn_binance_websocket_api.unicorn_binance_websocket_api_manager import 
 
 
 sys.path.insert(0, r'/usr/local/WB/dashboard')
-
 import dbrools
+import Settings
 
 
 main_path_data = os.path.expanduser('/usr/local/WB/data/')
 warnings.filterwarnings("ignore")
 
 
-class SsrmBot:
-    def __init__(self, symbol, min_amount, API_KEY, API_SECRET, my_direction):
-        self.symbol = symbol
-        self.api_key = API_KEY
-        self.api_secret = API_SECRET
-        self.bclient = Client(api_key=self.api_key, api_secret=self.api_secret)
+api_key = Settings.API_KEY
+api_secret = Settings.API_SECRET
 
-        self.new_period = 2
-        self.multiplicator = 11
-        self.supertrend_signal = None
+bclient = Client(api_key=api_key, api_secret=api_secret)
 
-        self.main_data = []
-        self.main_data_hour = []
-        self.my_ask = 0
-        self.my_bid = 0
+"""
+My History Trades
+"""
+# trades = bclient.get_my_trades(symbol='BNBUSDT', limit=10)
+# print(trades)
 
-        self.status = False
-        self.min_amount = float(min_amount)
-        self.amount = 0
-        self.main_direction = my_direction
-        self.wallet = []
-        self.order = False
-
-        self.my_tp = 0
-        self.my_sl = 0
-
-        self.my_Stoch = False
-        self.my_RSI = False
-
-    def run(self):
-        binance_websocket_api_manager = BinanceWebSocketApiManager(exchange="binance.com", output_default="UnicornFy")
-        binance_websocket_api_manager.create_stream(['kline_1m', 'kline_1h', 'depth5'],
-                                                    [f'{self.symbol}usdt'],
-                                                    stream_label="UnicornFy",
-                                                    output="UnicornFy")
-        binance_websocket_api_manager.create_stream(['depth5'],
-                                                    [f'{self.symbol}upusdt', f'{self.symbol}downusdt'],
-                                                    stream_label="UnicornFy",
-                                                    output="UnicornFy")
-
-        while True:
-            if self.status:
-                self.status = False
-
-                binance_websocket_api_manager.create_stream(['kline_1m', 'kline_1h', 'depth5'],
-                                                            [f'{self.symbol}usdt'],
-                                                            stream_label="UnicornFy",
-                                                            output="UnicornFy")
-                binance_websocket_api_manager.create_stream(['depth5'],
-                                                            [f'{self.symbol}upusdt', f'{self.symbol}downusdt'],
-                                                            stream_label="UnicornFy",
-                                                            output="UnicornFy")
-
-                print(f"PARSER RESTART at {datetime.now().strftime('%H:%M:%S')}")
-
-            else:
-                try:
-                    if binance_websocket_api_manager.is_manager_stopping():
-                        exit(0)
-                        self.status = True
-                    stream_buffer = binance_websocket_api_manager.pop_stream_data_from_stream_buffer()
-                    if stream_buffer:
-                        try:
-                            if stream_buffer['event_type'] == "depth":
-                                print("\n\n", stream_buffer)
-
-                                if stream_buffer['symbol'] == f'{self.symbol}usdt':
-                                    self.my_ask = float(stream_buffer['asks'][0][0])
-                                    self.my_bid = float(stream_buffer['bids'][0][0])
-
-                                elif stream_buffer['symbol'] == f'{self.symbol}upusdt' and self.main_direction == "buy":
-
-                                    self.amount = self.min_amount / float(stream_buffer['asks'][0][0])
-                                elif stream_buffer['symbol'] == f'{self.symbol}downusdt' and self.main_direction == "sell":
-                                    self.amount = self.min_amount / float(stream_buffer['asks'][0][0])
-
-                            time.sleep(0.2)
-                        except KeyError:
-                            print(f"Exception :\n {stream_buffer}")
-                            time.sleep(0.5)
-                    else:
-                        time.sleep(0.01)
-
-                except Exception as exc:
-                    self.status = True
-                    traceback.print_exc()
-                    time.sleep(30)
+# d = [{'symbol': 'ZECUSDT', 'id': 30787619, 'orderId': 705859683, 'orderListId': -1, 'price': '249.09000000', 'qty': '0.06000000',
+#       'quoteQty': '14.94540000', 'commission': '0.00002127', 'commissionAsset': 'BNB', 'time': 1618824859035, 'isBuyer': True, 'isMaker': False, 'isBestMatch': True},
+#      {'symbol': 'ZECUSDT', 'id': 30787741, 'orderId': 705863338, 'orderListId': -1, 'price': '249.59000000', 'qty': '0.06000000', 'quoteQty': '14.97540000',
+#       'commission': '0.00002127', 'commissionAsset': 'BNB', 'time': 1618824936020, 'isBuyer': False, 'isMaker': False, 'isBestMatch': True},
+#      {'symbol': 'ZECUSDT', 'id': 32788802, 'orderId': 741085556, 'orderListId': -1, 'price': '231.11000000', 'qty': '0.04327000', 'quoteQty': '10.00012970',
+#       'commission': '0.00001258', 'commissionAsset': 'BNB', 'time': 1619707094021, 'isBuyer': True, 'isMaker': True, 'isBestMatch': True},
+#
+#      {'symbol': 'ZECUSDT', 'id': 32789229, 'orderId': 741099409, 'orderListId': -1, 'price': '231.68000000', 'qty': '0.38846000', 'quoteQty': '89.99841280',
+#       'commission': '0.00011275', 'commissionAsset': 'BNB', 'time': 1619707512708, 'isBuyer': True, 'isMaker': True, 'isBestMatch': True}]
+#
+# for k, v in d[-1].items():
+#     print(k, "  | ", v)
 
 
-new_keys = dbrools.my_keys.find_one()
+"""
+My Open Orders
+"""
+# trades = bclient.get_open_orders()
+# print(trades)
+# d = [{'symbol': 'BNBUSDT', 'orderId': 2058247884, 'orderListId': -1, 'clientOrderId': 'web_6ecb53275f1c4521b2fab2c94ef34df6',
+#       'price': '600.00000000', 'origQty': '0.02500000', 'executedQty': '0.00000000', 'cummulativeQuoteQty': '0.00000000',
+#       'status': 'NEW', 'timeInForce': 'GTC', 'type': 'LIMIT', 'side': 'BUY', 'stopPrice': '0.00000000', 'icebergQty': '0.00000000',
+#       'time': 1619778117516, 'updateTime': 1619778117516, 'isWorking': True, 'origQuoteOrderQty': '0.00000000'}]
 
-telega_api_key = new_keys['telega']['key']
-telega_api_secret = new_keys['telega']['secret']
-api_key = new_keys['bin']['key']
-api_secret = new_keys['bin']['secret']
+# trades = bclient.get_all_orders(symbol='XRPUSDT', limit=10)
+# print(trades)
+
+"""
+New Order
+"""
+
+# order = bclient.order_limit_buy(
+#                     symbol='BNBUSDT',
+#                     quantity='0.025',
+#                     price=str(600))
+#
+# print(order)
+#
+# d = {'symbol': 'BNBUSDT',
+#      'orderId': 2058335436,
+#      'orderListId': -1,
+#      'clientOrderId': 'MInemzvhvqWzJlPczpDERm',
+#      'transactTime': 1619779149725,
+#      'price': '600.00000000',
+#      'origQty': '0.02500000',
+#      'executedQty': '0.00000000',
+#      'cummulativeQuoteQty': '0.00000000',
+#      'status': 'NEW',
+#      'timeInForce': 'GTC',
+#      'type': 'LIMIT',
+#      'side': 'BUY',
+#      'fills': []}
 
 
-new_data = SsrmBot('bnb', float(100), api_key, api_secret, 'buy')
-new_data.run()
+"""
+GET ALL ORDERS
+"""
+
+# orders = bclient.get_all_orders(symbol='BNBUSDT', limit=10)
+# print(orders)
+# d = [{'symbol': 'BNBUSDT',
+#       'orderId': 2058335436,
+#       'orderListId': -1,
+#       'clientOrderId': 'MInemzvhvqWzJlPczpDERm',
+#       'price': '600.00000000',
+#       'origQty': '0.02500000',
+#       'executedQty': '0.00000000',
+#       'cummulativeQuoteQty': '0.00000000',
+#       'status': 'NEW',
+#       'timeInForce': 'GTC',
+#       'type': 'LIMIT',
+#       'side': 'BUY',
+#       'stopPrice': '0.00000000',
+#       'icebergQty': '0.00000000',
+#       'time': 1619779149725,
+#       'updateTime': 1619779149725,
+#       'isWorking': True,
+#       'origQuoteOrderQty': '0.00000000'}]
+
+
+"""
+Check order status
+"""
+
+# order = bclient.get_order(
+#     symbol='BNBUSDT',
+#     orderId=2058335436)
+#
+# print(order)
+#
+# d = {'symbol': 'BNBUSDT',
+#      'orderId': 2058335436,
+#      'orderListId': -1,
+#      'clientOrderId': 'MInemzvhvqWzJlPczpDERm',
+#      'price': '600.00000000',
+#      'origQty': '0.02500000',
+#      'executedQty': '0.00000000',
+#      'cummulativeQuoteQty': '0.00000000',
+#      'status': 'NEW',    # ....  'FILLED'   | 'CANCELED'  | 'PARTIALLY_FILLED'
+#      'timeInForce': 'GTC',
+#      'type': 'LIMIT',
+#      'side': 'BUY',
+#      'stopPrice': '0.00000000',
+#      'icebergQty': '0.00000000',
+#      'time': 1619779149725,
+#      'updateTime': 1619779149725,
+#      'isWorking': True,
+#      'origQuoteOrderQty': '0.00000000'}
+
+
+
+"""
+GET ALL ORDERS 2  <<<<
+"""
+# orders = bclient.get_open_orders()
+# print(orders)
+#
+# d = [{'symbol': 'BNBUSDT',
+#       'orderId': 2058335436,
+#       'orderListId': -1,
+#       'clientOrderId': 'MInemzvhvqWzJlPczpDERm',
+#       'price': '600.00000000',
+#       'origQty': '0.02500000',
+#       'executedQty': '0.00000000',
+#       'cummulativeQuoteQty': '0.00000000',
+#       'status': 'NEW',
+#       'timeInForce': 'GTC',
+#       'type': 'LIMIT',
+#       'side': 'BUY',
+#       'stopPrice': '0.00000000',
+#       'icebergQty': '0.00000000',
+#       'time': 1619779149725,
+#       'updateTime': 1619779149725,
+#       'isWorking': True,
+#       'origQuoteOrderQty': '0.00000000'},
+#
+#      {'symbol': 'FILUSDT', 'orderId': 569033964, 'orderListId': -1,
+#       'clientOrderId': 'web_dc97f9b3fed84b6c8ae2d4240d11396f', 'price': '140.00000000', 'origQty': '0.10710000',
+#       'executedQty': '0.00000000', 'cummulativeQuoteQty': '0.00000000', 'status': 'NEW', 'timeInForce': 'GTC',
+#       'type': 'LIMIT', 'side': 'BUY', 'stopPrice': '0.00000000', 'icebergQty': '0.00000000', 'time': 1619779769032,
+#       'updateTime': 1619779769032, 'isWorking': True, 'origQuoteOrderQty': '0.00000000'}]
+
+
+from datetime import datetime
+
+t1 = time.time()
+print(t1)
+
+time.sleep(2)
+
+t2 = time.time()
+print(t2)
+
+print(t2-t1)

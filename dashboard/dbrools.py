@@ -2,7 +2,7 @@ import time
 
 from pymongo import MongoClient, ASCENDING, DESCENDING
 
-# client = MongoClient('mongodb://137.220.59.5:51125')
+# client = MongoClient('mongodb://137.220.59.5:51133')
 client = MongoClient('mongodb_defi', 27017)
 db = client['DeFi']
 my_data = db['Data']
@@ -208,6 +208,8 @@ def update_tel_keys(new_key, new_secret):
                                       'telega.secret': new_secret}})
     return
 
+
+# get_active_data()
 
 # t = my_keys.find_one()
 # print(t['bin'])
