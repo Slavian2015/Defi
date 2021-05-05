@@ -39,9 +39,12 @@ def bot_sendtext(bot_message):
 class SsrmBot:
     def __init__(self, symbol, min_amount, API_KEY, API_SECRET, my_direction):
         self.symbol = symbol
+        self.main_symbol = f'{self.symbol}upusdt' if self.main_direction == 1 else f'{self.symbol}downusdt'
+
         self.api_key = API_KEY
         self.api_secret = API_SECRET
         self.bclient = Client(api_key=self.api_key, api_secret=self.api_secret)
+        self.bot_ping = True
 
         self.new_period = 2
         self.multiplicator = 11
@@ -55,9 +58,15 @@ class SsrmBot:
         self.status = False
         self.min_amount = min_amount
         self.amount = 0
-        self.main_direction = my_direction
+        self.main_direction = 1 if my_direction == "buy" else 2
+        self.new_side = "UP" if self.main_direction == 1 else "DOWN"
         self.wallet = []
+
         self.order = False
+        self.order_status = False
+        self.order_id = False
+        self.order_time = False
+        self.order_price = 0
 
         self.my_tp = 0
         self.my_sl = 0
@@ -83,24 +92,28 @@ class SsrmBot:
         self.main_data_hour = para
         print("================== new_data_1_hour")
 
-    def place_new_order(self, direction):
-        if direction == 1:
-            print("====UP======\n",
-                  self.symbol,
-                  round(self.amount, 2),
-                  self.my_ask,
-                  self.my_sl,
-                  self.my_tp)
-            bot_message = f"Added new order UP {self.symbol} , \n{round(self.amount, 2)}, \n{round(float(self.my_ask), 5)},\n SL {round(float(self.my_sl), 5)} / TP {round(float(self.my_tp), 5)}"
-            bot_sendtext(bot_message)
-            print("\n", bot_message)
-            self.order = direction
-            reponse = Orders.my_order(client=self.bclient, symbol=f"{self.symbol.upper()}UPUSDT", side=1, amount=round(self.amount, 2))
+    def place_new_order(self):
+        bot_message = f"Added {self.symbol}{self.new_side} , \n{round(self.amount, 2)}, \n{round(float(self.my_ask), 5)},\n SL {round(float(self.my_sl), 5)} / TP {round(float(self.my_tp), 5)}"
+        bot_sendtext(bot_message)
+        print("\n", bot_message)
+        self.order = self.main_direction
+
+        reponse = Orders.my_order(client=self.bclient,
+                                  symbol=f"{self.symbol.upper()}{self.new_side}USDT",
+                                  side=1,
+                                  amount=round(self.amount, 2))
+
+        if reponse['error']:
+            self.bot_ping = False
+            logging.info(f"New order Error:\n {reponse}")
+            bot_sendtext(f"New order Error:\n {reponse}")
+        else:
+            self.order_id = reponse['result']['orderId']
             logging.info(f"New order:\n {reponse}")
             dbrools.insert_history_new(data=reponse)
-
+            self.order_price = self.my_bid
             data = {
-                "symbol": f"{self.symbol}UP",
+                "symbol": f"{self.symbol}{self.new_side}",
                 "amount": round(self.amount, 2),
                 "price": self.my_ask,
                 "direct": 'BUY',
@@ -108,75 +121,76 @@ class SsrmBot:
                 "date": f"{datetime.now().strftime('%d.%m.%Y')}"
             }
             dbrools.insert_history(data=data)
+            self.order_time = time.time()
+            self.place_tp_order()
 
+    def place_tp_order(self):
+        reponse = Orders.my_order(client=self.bclient,
+                                  symbol=self.main_symbol.upper(),
+                                  side=2,
+                                  amount=round(self.amount, 2),
+                                  price=self.my_tp)
+
+        if reponse['error']:
+            self.bot_ping = False
+            logging.info(f"TP order Error:\n {reponse}")
+            bot_sendtext(f"TP order Error:\n {reponse}")
         else:
-            print("====DOWN======\n",
-                  self.symbol,
-                  round(self.amount, 2),
-                  self.my_ask,
-                  self.my_sl,
-                  self.my_tp)
-            bot_message = f"Added new order DOWN {self.symbol} , \n{round(self.amount, 2)}, \n{round(float(self.my_ask), 5)},\n SL {round(float(self.my_sl), 5)} / TP {round(float(self.my_tp), 5)}"
-            bot_sendtext(bot_message)
-            print("\n", bot_message)
-            self.order = direction
-            reponse = Orders.my_order(client=self.bclient, symbol=f"{self.symbol.upper()}DOWNUSDT", side=1, amount=round(self.amount, 2))
-            logging.info(f"New order:\n {reponse}")
-            dbrools.insert_history_new(data=reponse)
+            self.order_id = reponse['result']['orderId']
 
-            data = {
-                "symbol": f"{self.symbol}DOWN",
-                "amount": round(self.amount, 2),
-                "price": self.my_ask,
-                "direct": 'BUY',
-                "result": 0,
-                "date": f"{datetime.now().strftime('%d.%m.%Y')}"
-            }
-            dbrools.insert_history(data=data)
-
-    def close_order(self, direction):
-        if direction == 1:
-            rep = "STOP LOSS" if self.my_bid <= self.my_sl else "TAKE PROFIT"
-            bot_message = f"QUIT order UP {self.symbol} , \n{round(self.amount, 2)}, \n{round(float(self.my_bid), 4)},\n {rep} \nSL {round(float(self.my_sl), 4)} / TP {round(float(self.my_tp), 4)}"
-            bot_sendtext(bot_message)
-            print("\n", bot_message)
-            self.order = False
-            reponse = Orders.my_order(client=self.bclient, symbol=f"{self.symbol.upper()}UPUSDT", side=2, amount=round(self.amount, 2))
-            logging.info(f"New order:\n {reponse}")
-            dbrools.insert_history_new(data=reponse)
-
-            data = {
-                "symbol": f"{self.symbol}UP",
-                "amount": round(self.amount, 2),
-                "price": self.my_bid,
-                "direct": 'SELL',
-                "result": 1 if self.my_bid <= self.my_sl else 2,
-                "date": f"{datetime.now().strftime('%d.%m.%Y')}"
-            }
-            dbrools.insert_history(data=data)
-
-        else:
-            rep = "STOP LOSS" if self.my_bid >= self.my_sl else "TAKE PROFIT"
-            bot_message = f"QUIT order DOWN {self.symbol} , \n{round(self.amount, 2)}, \n{round(float(self.my_bid), 4)},\n {rep} \nSL {round(float(self.my_sl), 4)} / TP {round(float(self.my_tp), 4)}"
-            bot_sendtext(bot_message)
-            print("\n", bot_message)
-            self.order = False
-            reponse = Orders.my_order(client=self.bclient, symbol=f"{self.symbol.upper()}DOWNUSDT", side=2, amount=round(self.amount, 2))
-            logging.info(f"New order:\n {reponse}")
-            dbrools.insert_history_new(data=reponse)
-
-            data = {
-                "symbol": f"{self.symbol}DOWN",
-                "amount": round(self.amount, 2),
-                "price": self.my_bid,
-                "direct": 'SELL',
-                "result": 1 if self.my_bid >= self.my_sl else 2,
-                "date": f"{datetime.now().strftime('%d.%m.%Y')}"
-            }
-            dbrools.insert_history(data=data)
-
+    def close_tp_order(self):
+        bot_message = f"QUIT {self.symbol.upper()}{self.new_side} , \n{round(self.amount, 2)}, \n{round(float(self.my_tp), 5)}, \n TAKE PROFIT ,\n SL {round(float(self.my_sl), 4)} / TP {round(float(self.my_tp), 4)}"
+        bot_sendtext(bot_message)
+        print("\n", bot_message)
+        data = {
+            "symbol": f"{self.symbol}{self.new_side}",
+            "amount": round(self.amount, 2),
+            "price": self.my_tp,
+            "direct": 'SELL',
+            "result": 2,
+            "date": f"{datetime.now().strftime('%d.%m.%Y')}"
+        }
+        dbrools.insert_history(data=data)
         self.my_Stoch = False
         self.my_RSI = False
+        self.order = False
+
+    def close_sl_order(self):
+        bot_message = f"QUIT {self.symbol.upper()}{self.new_side} , \n{round(self.amount, 2)}, \n{round(float(self.my_sl), 5)}, \n STOP LOSS ,\n SL {round(float(self.my_sl), 4)} / TP {round(float(self.my_tp), 4)}"
+        bot_sendtext(bot_message)
+        print("\n", bot_message)
+
+        result = self.bclient.cancel_order(
+            symbol=self.main_symbol.upper(),
+            orderId=self.order_id)
+
+        print("\n", result)
+
+        data = {
+            "symbol": f"{self.symbol}{self.new_side}",
+            "amount": round(self.amount, 2),
+            "price": self.my_sl,
+            "direct": 'SELL',
+            "result": 1,
+            "date": f"{datetime.now().strftime('%d.%m.%Y')}"
+        }
+        dbrools.insert_history(data=data)
+
+        reponse = Orders.my_order(client=self.bclient,
+                                  symbol=self.main_symbol.upper(),
+                                  side=2,
+                                  amount=round(self.amount, 2))
+        logging.info(f"QUIT order:\n {reponse}")
+        dbrools.insert_history_new(data=reponse)
+
+        if reponse['error']:
+            self.bot_ping = False
+            logging.info(f"New order Error:\n {reponse}")
+            bot_sendtext(f"New order Error:\n {reponse}")
+        else:
+            self.my_Stoch = False
+            self.my_RSI = False
+            self.order = False
 
     def algorithm(self):
         if not self.order:
@@ -197,7 +211,7 @@ class SsrmBot:
 
             if df["slowk"].iloc[-1] < 20 and df["slowd"].iloc[-1] < 20:
                 self.my_Stoch = 1
-            elif df["slowk"].iloc[-1] > 80 or df["slowd"].iloc[-1] > 80:
+            elif df["slowk"].iloc[-1] > 80 and df["slowd"].iloc[-1] > 80:
                 self.my_Stoch = 2
 
             if self.my_Stoch:
@@ -206,20 +220,17 @@ class SsrmBot:
                 else:
                     self.my_RSI = 2
 
-            if self.main_direction == "buy":
-                if self.my_Stoch == 1 and self.my_RSI == 1:
-                    if df["hist"].iloc[-1] > 0 > df["hist"].iloc[-2] and self.supertrend_signal == 1:
-                        self.wallet.append(self.amount)
-                        self.my_sl = df['close'].iloc[-1] / 1.01
-                        self.my_tp = df['close'].iloc[-1] * 1.02
-                        self.place_new_order(1)
-            elif self.main_direction == "sell":
-                if self.my_Stoch == 2 and self.my_RSI == 2:
-                    if df["hist"].iloc[-1] > 0 > df["hist"].iloc[-2] and self.supertrend_signal == 2:
-                        self.wallet.append(self.amount)
-                        self.my_sl = df['close'].iloc[-1] * 1.01
-                        self.my_tp = df['close'].iloc[-1] / 1.02
-                        self.place_new_order(2)
+            if self.my_Stoch == self.main_direction and self.my_RSI == self.main_direction:
+                if self.main_direction == 1:
+                    my_signal = df["hist"].iloc[-1] > 0 > df["hist"].iloc[-2]
+                else:
+                    my_signal = df["hist"].iloc[-1] < 0 < df["hist"].iloc[-2]
+
+                if my_signal and self.supertrend_signal == self.main_direction:
+                    self.wallet.append(self.amount)
+                    self.my_sl = self.my_bid / 1.018
+                    self.my_tp = self.my_ask * 1.05
+                    self.place_new_order()
 
     def algorithm_supertrend(self):
         data = pd.DataFrame(self.main_data_hour,
@@ -291,16 +302,16 @@ class SsrmBot:
     def run(self):
         bot_sendtext("SSRM START")
         binance_websocket_api_manager = BinanceWebSocketApiManager(exchange="binance.com", output_default="UnicornFy")
-        binance_websocket_api_manager.create_stream(['kline_1m', 'kline_1h', 'depth5'],
+        binance_websocket_api_manager.create_stream(['kline_1m', 'kline_1h'],
                                                     [f'{self.symbol}usdt'],
                                                     stream_label="UnicornFy",
                                                     output="UnicornFy")
         binance_websocket_api_manager.create_stream(['depth5'],
-                                                    [f'{self.symbol}upusdt', f'{self.symbol}downusdt'],
+                                                    [self.main_symbol],
                                                     stream_label="UnicornFy",
                                                     output="UnicornFy")
 
-        while True:
+        while self.bot_ping:
             if self.status:
                 self.status = False
 
@@ -324,24 +335,20 @@ class SsrmBot:
                     if stream_buffer:
                         try:
                             if stream_buffer['event_type'] == "depth":
-                                if stream_buffer['symbol'] == f'{self.symbol}usdt'.upper():
+                                if stream_buffer['symbol'] == self.main_symbol.upper():
                                     self.my_ask = float(stream_buffer['asks'][0][0])
                                     self.my_bid = float(stream_buffer['bids'][0][0])
 
-                                    if self.order == 1:
-                                        if self.my_bid <= self.my_sl:
-                                            self.close_order(self.order)
-                                        elif self.my_bid >= self.my_tp:
-                                            self.close_order(self.order)
-                                    elif self.order == 2:
-                                        if self.my_bid >= self.my_sl:
-                                            self.close_order(self.order)
-                                        elif self.my_bid <= self.my_tp:
-                                            self.close_order(self.order)
-                                elif stream_buffer['symbol'] == f'{self.symbol}upusdt'.upper() and self.main_direction == "buy" and not self.order:
-                                    self.amount = self.min_amount / float(stream_buffer['asks'][0][0])
-                                elif stream_buffer['symbol'] == f'{self.symbol}downusdt' and self.main_direction == "sell" and not self.order:
-                                    self.amount = self.min_amount / float(stream_buffer['asks'][0][0])
+                                    if self.order:
+                                        if self.order_status:
+                                            if self.my_ask > self.my_tp:
+                                                self.close_tp_order()
+                                                """ проверить по ID и сохранить ордер в БД"""
+                                            if self.my_bid <= self.my_sl:
+                                                """ отменить TP, Проверить и сохранить ордер в БД"""
+                                                self.close_sl_order()
+                                    else:
+                                        self.amount = self.min_amount / float(stream_buffer['asks'][0][0])
 
                             else:
                                 if stream_buffer['event_type'] == "kline":

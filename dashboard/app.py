@@ -12,7 +12,6 @@ import threading
 import warnings
 import dbrools
 from binance.client import Client
-from datetime import datetime
 
 warnings.filterwarnings("ignore")
 

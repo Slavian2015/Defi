@@ -175,14 +175,26 @@ GET ALL ORDERS 2  <<<<
 #       'updateTime': 1619779769032, 'isWorking': True, 'origQuoteOrderQty': '0.00000000'}]
 
 
-from datetime import datetime
+dd = [{'error': False,
+       'result': {'symbol': 'YFIUPUSDT',
+                  'orderId': 98339030,
+                  'orderListId': -1,
+                  'clientOrderId': 'e15d2V6dAYPxDvsk9yQyNq',
+                  'transactTime': 1619704808279,
+                  'price': '0.00000000',
+                  'origQty': '16.26000000',
+                  'executedQty': '16.26000000',
+                  'cummulativeQuoteQty': '98.82828000',
+                  'status': 'FILLED',
+                  'timeInForce': 'GTC',
+                  'type': 'MARKET',
+                  'side': 'SELL',
+                  'fills': [{'price': '6.07800000',
+                             'qty': '16.26000000',
+                             'commission': '0.00012410',
+                             'commissionAsset': 'BNB',
+                             'tradeId': 3316730}]}}]
 
-t1 = time.time()
-print(t1)
 
-time.sleep(2)
-
-t2 = time.time()
-print(t2)
-
-print(t2-t1)
+for k,v in dd[0]:
+    print(k, v)

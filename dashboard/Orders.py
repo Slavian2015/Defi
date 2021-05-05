@@ -43,12 +43,12 @@ def my_order(client=None, symbol=None, side=None, amount=None, price=None):
                 order = client.order_limit_buy(
                     symbol=symbol,
                     quantity=amount,
-                    price=str(price))
+                    price="{:0.3f}".format(price))
             else:
                 order = client.order_limit_sell(
                     symbol=symbol,
                     quantity=amount,
-                    price=str(price))
+                    price="{:0.3f}".format(price))
         else:
             if side == 1:
                 order = client.order_market_buy(
