@@ -5,7 +5,7 @@
 
 
 51.158.167.181:5005
-cd /var/www/BiBot/
+cd /var/www/Defi/
 
 
 sudo docker-compose down

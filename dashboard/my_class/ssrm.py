@@ -59,7 +59,7 @@ class SsrmBot:
         self.min_amount = min_amount
         self.amount = 0
         self.main_direction = 1 if my_direction == "buy" else 2
-        self.new_side = "UP" if self.main_direction == 1 else "DOWN"
+        self.new_side = "UP" if my_direction == "buy" else "DOWN"
         self.wallet = []
 
         self.order = False
