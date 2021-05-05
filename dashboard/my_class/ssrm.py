@@ -39,7 +39,7 @@ def bot_sendtext(bot_message):
 class SsrmBot:
     def __init__(self, symbol, min_amount, API_KEY, API_SECRET, my_direction):
         self.symbol = symbol
-        self.main_symbol = f'{self.symbol}upusdt' if self.main_direction == 1 else f'{self.symbol}downusdt'
+        self.main_symbol = f'{self.symbol}upusdt' if my_direction == "buy" else f'{self.symbol}downusdt'
 
         self.api_key = API_KEY
         self.api_secret = API_SECRET
