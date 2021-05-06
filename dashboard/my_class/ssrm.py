@@ -63,7 +63,6 @@ class SsrmBot:
         self.wallet = []
 
         self.order = False
-        self.order_status = False
         self.order_id = False
         self.order_time = False
         self.order_price = 0
@@ -340,13 +339,12 @@ class SsrmBot:
                                     self.my_bid = float(stream_buffer['bids'][0][0])
 
                                     if self.order:
-                                        if self.order_status:
-                                            if self.my_ask > self.my_tp:
-                                                self.close_tp_order()
-                                                """ проверить по ID и сохранить ордер в БД"""
-                                            if self.my_bid <= self.my_sl:
-                                                """ отменить TP, Проверить и сохранить ордер в БД"""
-                                                self.close_sl_order()
+                                        if self.my_ask > self.my_tp:
+                                            self.close_tp_order()
+                                            """ проверить по ID и сохранить ордер в БД"""
+                                        if self.my_bid <= self.my_sl:
+                                            """ отменить TP, Проверить и сохранить ордер в БД"""
+                                            self.close_sl_order()
                                     else:
                                         self.amount = self.min_amount / float(stream_buffer['asks'][0][0])
 
