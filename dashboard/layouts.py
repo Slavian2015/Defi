@@ -301,12 +301,6 @@ def sub_column_left():
                           ]),
 
                           dbc.Col(width=3, children=[
-                              dbc.Badge(v["side"],
-                                        id={"type": "symbol_side", "index": k},
-                                        color="success" if v["side"] == "buy" else "danger", className="mr-1"),
-                          ]),
-
-                          dbc.Col(width=3, children=[
                               dbc.Input(type="number",
                                         id={"type": "symbol_amount", "index": k},
                                         value=float(v["amount"])

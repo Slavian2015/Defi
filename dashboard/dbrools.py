@@ -148,14 +148,13 @@ def create_active():
                "LTC", "ADA", "AAVE"]
 
     for i in symbols:
-        for k in ['buy', 'sell']:
-            data = {
-                "symbol": i,
-                "side": k,
-                "amount": 0,
-                "process": 0
-            }
-            insert_document(my_active, data)
+        data = {
+            "symbol": i,
+            "side": 'buy',
+            "amount": 0,
+            "process": 0
+        }
+        insert_document(my_active, data)
     return
 
 
@@ -167,14 +166,14 @@ def get_active_data():
     return d
 
 
-def update_pid(symbol, side, amount, pid):
-    myquery = {"symbol": symbol, "side": side}
+def update_pid(symbol, amount, pid):
+    myquery = {"symbol": symbol, "side": 'buy'}
     my_active.update(myquery, {"$set": {'amount': amount, 'process': pid}})
     return
 
 
-def find_pid(symbol, side):
-    myquery = my_active.find_one({"symbol": symbol, "side": side})["process"]
+def find_pid(symbol):
+    myquery = my_active.find_one({"symbol": symbol, "side": 'buy'})["process"]
     return myquery
 
 

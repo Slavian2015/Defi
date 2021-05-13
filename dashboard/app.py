@@ -177,7 +177,7 @@ def toggle_modal(n1, amount, side, symbol, old_btn):
             button = json.loads(button.replace("'", "\""))
         if button["type"] == 'symbol_button':
             if old_btn == "START":
-                pid = subprocess.Popen(["python", "/usr/local/WB/dashboard/my_class/ssrm.py", f'--symbol={symbol}', f'--amount={amount}', f'--side={side}']).pid
+                pid = subprocess.Popen(["python", "/usr/local/WB/dashboard/my_class/ssrm_rsi.py", f'--symbol={symbol}', f'--amount={amount}']).pid
                 dbrools.update_pid(symbol, side, amount, pid)
                 return ["STOP", "danger"]
             else:
