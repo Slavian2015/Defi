@@ -52,8 +52,6 @@ dash_app.layout = html.Div([
 def display_page(pathname):
     if pathname == '/':
         return layouts.my_view()
-    elif pathname == '/all':
-        return grafs_layout.my_view()
     else:
         return "404"
 
@@ -160,29 +158,26 @@ def trigger_by_modify(n1):
      Output({'type': 'symbol_button', 'index': MATCH}, 'color')],
     [Input({'type': 'symbol_button', 'index': MATCH}, 'n_clicks')],
     [State({'type': 'symbol_amount', 'index': MATCH}, 'value'),
-     State({'type': 'symbol_side', 'index': MATCH}, 'children'),
      State({'type': 'symbol_name', 'index': MATCH}, 'children'),
      State({'type': 'symbol_button', 'index': MATCH}, 'children')]
 )
-def toggle_modal(n1, amount, side, symbol, old_btn):
+def toggle_modal(n1, amount, symbol, old_btn):
     trigger = dash.callback_context.triggered[0]
     button = trigger["prop_id"].split(".")[0]
 
     if not button:
         raise PreventUpdate
     else:
-        # print(amount, side, symbol, old_btn)
-
         if type(button) is str:
             button = json.loads(button.replace("'", "\""))
         if button["type"] == 'symbol_button':
             if old_btn == "START":
                 pid = subprocess.Popen(["python", "/usr/local/WB/dashboard/my_class/ssrm_rsi.py", f'--symbol={symbol}', f'--amount={amount}']).pid
-                dbrools.update_pid(symbol, side, amount, pid)
+                dbrools.update_pid(symbol, amount, pid)
                 return ["STOP", "danger"]
             else:
-                pidid = dbrools.find_pid(symbol, side)
-                dbrools.update_pid(symbol, side, 0, 0)
+                pidid = dbrools.find_pid(symbol)
+                dbrools.update_pid(symbol, 0, 0)
                 os.kill(int(pidid), signal.SIGKILL)
                 return ["START", "success"]
         else:

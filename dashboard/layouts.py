@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
-import json
-import time
+import base64
+import os
+import sys
 
-import dash_core_components as dcc
 import dash_bootstrap_components as dbc
+import dash_core_components as dcc
 import dash_html_components as html
-import pandas as pd
-import sys, base64, os
-import plotly.graph_objects as go
+
 import dbrools
 
 sys.path.insert(0, r'/usr/local/WB')
@@ -44,8 +43,6 @@ def content():
     else:
         balance = "0"
 
-    # print(balance_full, "\n\n")
-
     cont = [
         dbc.Row(style={"width": "100%",
                        "height": "10vh",
@@ -59,7 +56,7 @@ def content():
                                    "margin": "0",
                                    "padding": "0"
                                    },
-                            width=4,
+                            width=5,
                             children=[
                                 dbc.Row(style={"width": "100%",
                                                "margin": "0",
@@ -72,48 +69,18 @@ def content():
                                                            },
                                                     width=4,
                                                     children=[
-                                                        dbc.Button("BALANCE", id="balance_btn", color="warning")]),
-                                            dbc.Col(style={"textAlign": "center",
-                                                           "margin": "0",
-                                                           "padding": "0"
-                                                           },
-                                                    width=4,
-                                                    children=[
-                                                        dbc.Button("GRAFS", href="/all", color="info")]),
-                                            dbc.Col(style={"textAlign": "center",
-                                                           "margin": "0",
-                                                           "padding": "0"
-                                                           },
-                                                    width=4,
-                                                    children=[
-                                                        dbc.Button("ALERT", color="danger")]),
+                                                        dbc.Button("BALANCE", id="balance_btn", color="warning")])
                                         ])]),
                     dbc.Col(style={"textAlign": "center",
                                    "margin": "0",
                                    "padding": "0"
                                    },
-                            width=4,
-                            children=[
-                                dbc.ButtonGroup(
-                                    [dbc.Button("ON1",
-                                                id="kline_on",
-                                                n_clicks=0,
-                                                color="success"),
-                                     dbc.Button("OFF",
-                                                id="kline_off",
-                                                color="danger")],
-                                    style={
-                                        "padding": "0",
-                                        "margin": "0",
-                                        "margin-left": "15px"
-                                    },
-                                )
-                            ]),
+                            children=[html.Div()]),
                     dbc.Col(style={"textAlign": "center",
                                    "margin": "0",
                                    "padding": "0"
                                    },
-                            width=4,
+                            width=5,
                             children=dbc.Row(style={"width": "100%",
                                                     "margin": "0",
                                                     "padding": "0"},
@@ -149,19 +116,31 @@ def content():
                 no_gutters=True
                 ),
 
-        dbc.Row(style={"width": "100%", "margin": "0", "padding": "0"},
+        dbc.Row(style={"width": "100%",
+                       "height": "89vh",
+                       "minHeight": "89vh",
+                       "maxHeight": "89vh",
+                       "overflowY": "scroll",
+                       "margin": "0",
+                       "padding": "0"},
                 children=[
                     dbc.Col(style={"textAlign": "center",
-                                   "height": "89vh",
-                                   "minHeight": "89vh",
                                    "maxHeight": "89vh",
                                    "overflowY": "scroll",
                                    "margin": "0",
                                    "padding": "0"
                                    },
                             width=8,
+                            sm=12,
+                            lg=8,
+                            xs=12,
                             className="no-scrollbars",
-                            children=column_left()),
+                            children=dbc.Row(style={"width": "100%",
+                                                    "margin": "0",
+                                                    "padding": "0"},
+                                             id="new_trade_history",
+                                             className="no-scrollbars",
+                                             children=trade_history())),
                     dbc.Col(style={"textAlign": "center",
                                    "height": "89vh",
                                    "minHeight": "89vh",
@@ -171,6 +150,9 @@ def content():
                                    "padding": "0"},
                             className="no-scrollbars",
                             width=4,
+                            sm=12,
+                            lg=4,
+                            xs=12,
                             children=column_right()),
                 ],
                 no_gutters=True)]
@@ -239,26 +221,26 @@ def column_left():
 
     cont = [
         dbc.Row(style={"width": "100%",
-                           "margin": "0",
-                           "margin-bottom": "5px",
-                           "padding": "0"},
-                    no_gutters=False,
-                    children=form),
-            dbc.Row(style={"width": "100%",
-                           "margin": "0",
-                           "margin-bottom": "50px",
-                           "padding": "0"},
-                    no_gutters=False,
-                    children=form2),
-            dbc.Row(style={"width": "100%",
-                           "margin": "0",
-                           "padding": "0"},
-                    justify="center",
-                    align="center",
-                    id="new_left_side",
-                    no_gutters=False,
-                    children=sub_column_left()),
-            ]
+                       "margin": "0",
+                       "margin-bottom": "5px",
+                       "padding": "0"},
+                no_gutters=False,
+                children=form),
+        dbc.Row(style={"width": "100%",
+                       "margin": "0",
+                       "margin-bottom": "50px",
+                       "padding": "0"},
+                no_gutters=False,
+                children=form2),
+        dbc.Row(style={"width": "100%",
+                       "margin": "0",
+                       "padding": "0"},
+                justify="center",
+                align="center",
+                id="new_left_side",
+                no_gutters=False,
+                children=sub_column_left()),
+    ]
 
     return cont
 
@@ -267,55 +249,50 @@ def sub_column_left():
     data = dbrools.get_active_data()
 
     cards = []
-    # print(data, "\n\n")
     for k, v in enumerate(data):
-        my_img = html.Img(style={"padding": "0",
-                                 "margin": "0",
-                                 "max_height": "25px",
-                                 "max-width": "25px"
-                                 },
-                          src='data:image/png;base64,{}'.format(
-                              base64.b64encode(open(main_path_data + f'{v["symbol"]}.png', 'rb').read()).decode(
-                                  'ascii')))
+        if v["side"] != "sell":
+            my_img = html.Img(style={"padding": "0",
+                                     "margin": "0",
+                                     "max_height": "25px",
+                                     "max-width": "25px"
+                                     },
+                              src='data:image/png;base64,{}'.format(
+                                  base64.b64encode(open(main_path_data + f'{v["symbol"]}.png', 'rb').read()).decode(
+                                      'ascii')))
 
-        if v["process"] == 0:
-            my_button = "START"
-            my_button_color = "success"
-        else:
-            my_button = "STOP"
-            my_button_color = "danger"
+            if v["process"] == 0:
+                my_button = "START"
+                my_button_color = "success"
+            else:
+                my_button = "STOP"
+                my_button_color = "danger"
 
-        row = dbc.Row(style={"width": "60%",
-                             "margin": "0",
-                             "padding": "0"},
-                      no_gutters=False,
-                      children=[
-                          dbc.Col(width=1, children=[
-                              my_img
-                          ]),
+            row = dbc.Row(style={"margin": "0", "padding": "0"},
+                          children=[
+                              dbc.Col(width=3, lg=3, children=[
+                                  my_img
+                              ]),
 
-                          dbc.Col(width=1, children=[
-                              html.H5(v["symbol"],
-                                      id={"type": "symbol_name", "index": k}
-                                      )
-                          ]),
+                              dbc.Col(width=3, lg=3, children=[
+                                  html.H5(v["symbol"],
+                                          id={"type": "symbol_name", "index": k}
+                                          )
+                              ]),
 
-                          dbc.Col(width=3, children=[
-                              dbc.Input(type="number",
-                                        id={"type": "symbol_amount", "index": k},
-                                        value=float(v["amount"])
-                                        ),
-                          ]),
+                              dbc.Col(width=3, lg=3, children=[
+                                  dbc.Input(type="number",
+                                            id={"type": "symbol_amount", "index": k},
+                                            value=float(v["amount"])
+                                            ),
+                              ]),
 
-                          dbc.Col(width=4, children=[
-                              dbc.Button(my_button,
-                                         id={"type": "symbol_button", "index": k},
-                                         color=my_button_color),
-                          ]),
-
-                      ])
-
-        cards.append(row)
+                              dbc.Col(width=3, lg=3, children=[
+                                  dbc.Button(my_button,
+                                             id={"type": "symbol_button", "index": k},
+                                             color=my_button_color),
+                              ]),
+                          ])
+            cards.append(row)
 
     return cards
 
@@ -326,6 +303,10 @@ def column_right():
         interval,
         dbc.Row(style={"width": "100%",
                        "margin": "0",
+                       # "height": "28vh",
+                       # "minHeight": "28vh",
+                       "maxHeight": "28vh",
+                       "overflowY": "scroll",
                        "padding": "0"},
                 id="my_wallet_balance",
                 children=my_wallet()),
@@ -337,15 +318,14 @@ def column_right():
                        "padding": "0"},
                 children=[]),
         dbc.Row(style={"width": "100%",
-                       "height": "40vh",
-                       "minHeight": "40vh",
-                       "maxHeight": "40vh",
+                       "height": "60vh",
+                       "minHeight": "60vh",
+                       "maxHeight": "60vh",
                        "overflowY": "scroll",
                        "margin": "0",
                        "padding": "0"},
-                id="new_trade_history",
                 className="no-scrollbars",
-                children=trade_history()),
+                children=column_left()),
     ]
 
     return cont
@@ -356,7 +336,6 @@ def my_wallet():
     balances = dbrools.get_my_balances()
 
     if balances:
-        # print(balances, "\n\n")
         for k, v in balances.items():
             if k not in ["_id", "sku"]:
                 if float(v) > 0:
@@ -397,6 +376,8 @@ def my_wallet():
                                                          ]),
                                         style={"min-width": "150px",
                                                "max-width": "150px",
+                                               # "min-height": "50px",
+                                               # "max-height": "50px",
                                                "margin": "1px",
                                                # "padding": "0"
                                                },
