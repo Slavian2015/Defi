@@ -39,7 +39,7 @@ def content():
     balance_full = dbrools.get_my_balances()
 
     if balance_full:
-        balance = "{0:.2f} $".format(float(balance_full["USDT"]))
+        balance = "{0:.2f}$".format(float(balance_full["USDT"]))
     else:
         balance = "0"
 
@@ -89,19 +89,6 @@ def content():
                                                                 "margin": "0",
                                                                 "padding": "0"
                                                                 },
-                                                         width=2,
-                                                         children=[html.Img(style={"padding": "0",
-                                                                                   "margin": "0",
-                                                                                   "max_height": "40px",
-                                                                                   "max-width": "40px"
-                                                                                   },
-                                                                            src='data:image/png;base64,{}'.format(
-                                                                                encoded_image))]),
-                                                 dbc.Col(style={"textAlign": "center",
-                                                                "margin": "0",
-                                                                "padding": "0"
-                                                                },
-                                                         width=5,
                                                          children=[
                                                              html.H3(balance,
                                                                      id="usdt_balance",
@@ -125,7 +112,7 @@ def content():
                        "padding": "0"},
                 children=[
                     dbc.Col(style={"textAlign": "center",
-                                   "maxHeight": "89vh",
+                                   "maxHeight": "70vh",
                                    "overflowY": "scroll",
                                    "margin": "0",
                                    "padding": "0"

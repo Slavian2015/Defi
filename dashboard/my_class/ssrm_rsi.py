@@ -24,6 +24,27 @@ parser.add_argument('--symbol', help='bnb or link')
 parser.add_argument('--amount', help='Amount')
 args = parser.parse_args()
 
+n_rools = {"BTC": {"UP": 3, "DOWN": 5},
+           "ETH": {"UP": 3, "DOWN": 6},
+           "BNB": {"UP": 3, "DOWN": 2},
+           "XRP": {"UP": 3, "DOWN": 6},
+           "LINK": {"UP": 3, "DOWN": 4},
+           "TRX": {"UP": 3, "DOWN": 6},
+           "EOS": {"UP": 3, "DOWN": 5},
+           "FIL": {"UP": 3, "DOWN": 6},
+           "AAVE": {"UP": 3, "DOWN": 4},
+           "DOT": {"UP": 3, "DOWN": 4},
+           "UNI": {"UP": 3, "DOWN": 6},
+           "YFI": {"UP": 3, "DOWN": 6},
+           "SUSHI": {"UP": 3, "DOWN": 7},
+           "BCH": {"UP": 2, "DOWN": 2},
+           "XTZ": {"UP": 3, "DOWN": 5},
+           "LTC": {"UP": 3, "DOWN": 6},
+           "ADA": {"UP": 3, "DOWN": 4},
+           "XLM": {"UP": 3, "DOWN": 6},
+           "SXP": {"UP": 4, "DOWN": 2},
+           "1INCH": {"UP": 2, "DOWN": 2}}
+
 
 def bot_sendtext(bot_message):
     bot_token = telega_api_key
@@ -64,11 +85,9 @@ class SsrmBot:
 
         self.main_direction = None
         self.new_side = None
-        self.wallet = []
 
         self.order = False
         self.order_id = False
-        self.order_price = 0
 
         self.my_tp = 0
         self.my_sl = 0
@@ -105,7 +124,7 @@ class SsrmBot:
             self.amount = self.amount_down
             self.my_ask = self.my_ask_down
 
-        bot_message = f"Added {self.symbol}{self.new_side} , \n{round(self.amount, 2)}, \n{round(float(self.my_ask), 5)},\n SL {round(float(self.my_sl), 5)} / TP {round(float(self.my_tp), 5)}"
+        bot_message = f"Added {self.symbol}{self.new_side} , \n{round(self.amount, 2)}, \n{round(self.my_ask, n_rools[self.symbol.upper()][self.new_side])},\n SL {round(self.my_sl, n_rools[self.symbol.upper()][self.new_side])} / TP {round(self.my_tp, n_rools[self.symbol.upper()][self.new_side])}"
 
         bot_sendtext(bot_message)
         print("\n", bot_message)
@@ -125,7 +144,7 @@ class SsrmBot:
             self.order_id = reponse['result']['orderId']
             logging.info(f"New order:\n {reponse}")
             dbrools.insert_history_new(data=reponse)
-            self.order_price = self.my_bid_up if self.main_direction == 1 else self.my_bid_down
+
             data = {
                 "symbol": f"{self.symbol}{self.new_side}",
                 "amount": round(self.amount, 2),
@@ -142,7 +161,7 @@ class SsrmBot:
                                   symbol=f"{self.symbol.upper()}{self.new_side}USDT",
                                   side=2,
                                   amount=round(self.amount, 2),
-                                  price=self.my_tp)
+                                  price=round(self.my_tp, n_rools[self.symbol.upper()][self.new_side]))
 
         if reponse['error']:
             self.bot_ping = False
@@ -150,9 +169,10 @@ class SsrmBot:
             bot_sendtext(f"TP order Error:\n {reponse}")
         else:
             self.order_id = reponse['result']['orderId']
+            bot_sendtext(f"TP order Fine:\n {reponse}")
 
     def close_tp_order(self):
-        bot_message = f"QUIT {self.symbol.upper()}{self.new_side} , \n{round(self.amount, 2)}, \n{round(float(self.my_tp), 5)}, \n TAKE PROFIT ,\n SL {round(float(self.my_sl), 4)} / TP {round(float(self.my_tp), 4)}"
+        bot_message = f"QUIT {self.symbol.upper()}{self.new_side} , \n{round(self.amount, 2)}, \n{round(self.my_tp, n_rools[self.symbol.upper()][self.new_side])}, \n TAKE PROFIT ,\n SL {round(self.my_sl, n_rools[self.symbol.upper()][self.new_side])} / TP {round(self.my_tp, n_rools[self.symbol.upper()][self.new_side])}"
         bot_sendtext(bot_message)
         print("\n", bot_message)
         data = {
@@ -167,6 +187,7 @@ class SsrmBot:
         self.my_Stoch = False
         self.my_RSI = False
         self.order = False
+        self.order_id = False
 
     def close_sl_order(self):
         my_order = self.bclient.get_order(
@@ -209,6 +230,7 @@ class SsrmBot:
                 self.my_Stoch = False
                 self.my_RSI = False
                 self.order = False
+                self.order_id = False
         else:
             bot_message = f"QUIT {self.symbol.upper()}{self.new_side} , \n{round(self.amount, 2)}, \n{round(float(self.my_sl), 5)}, \n STOP LOSS ,\n SL {round(float(self.my_sl), 4)} / TP {round(float(self.my_tp), 4)}"
             bot_sendtext(bot_message)
@@ -244,6 +266,7 @@ class SsrmBot:
                 self.my_Stoch = False
                 self.my_RSI = False
                 self.order = False
+                self.order_id = False
 
     def algorithm(self):
         if not self.order:
@@ -280,14 +303,12 @@ class SsrmBot:
 
             if self.my_Stoch == 1 and self.my_RSI == 1:
                 if df["hist"].iloc[-1] > 0 > df["hist"].iloc[-2] and self.rsi_signal > 70:
-                    self.wallet.append(self.amount_up)
                     self.my_sl = self.my_bid_up / 1.018
                     self.my_tp = self.my_ask_up * 1.05
                     self.main_direction = self.my_RSI
                     self.place_new_order()
             elif self.my_Stoch == 2 and self.my_RSI == 2:
                 if df["hist"].iloc[-1] < 0 < df["hist"].iloc[-2] and self.rsi_signal < 30:
-                    self.wallet.append(self.amount_down)
                     self.my_sl = self.my_bid_down / 1.018
                     self.my_tp = self.my_ask_down * 1.05
                     self.main_direction = self.my_RSI
@@ -370,7 +391,6 @@ class SsrmBot:
                                             self.close_sl_order()
                                     else:
                                         self.amount_down = self.min_amount / float(stream_buffer['asks'][0][0])
-
                             else:
                                 if stream_buffer['event_type'] == "kline":
                                     if stream_buffer['kline']['interval'] == "1m":

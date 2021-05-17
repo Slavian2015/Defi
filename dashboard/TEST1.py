@@ -11,15 +11,12 @@ from unicorn_fy.unicorn_fy import UnicornFy
 from time import strftime
 from unicorn_binance_websocket_api.unicorn_binance_websocket_api_manager import BinanceWebSocketApiManager
 
-
 sys.path.insert(0, r'/usr/local/WB/dashboard')
 import dbrools
 import Settings
 
-
 main_path_data = os.path.expanduser('/usr/local/WB/data/')
 warnings.filterwarnings("ignore")
-
 
 api_key = Settings.API_KEY
 api_secret = Settings.API_SECRET
@@ -142,7 +139,6 @@ Check order status
 #      'origQuoteOrderQty': '0.00000000'}
 
 
-
 """
 GET ALL ORDERS 2  <<<<
 """
@@ -195,6 +191,26 @@ dd = [{'error': False,
                              'commissionAsset': 'BNB',
                              'tradeId': 3316730}]}}]
 
-
-for k,v in dd[0]:
+for k, v in dd[0]:
     print(k, v)
+
+rools = {"BTC": {"UP": 3, "DOWN": 5},
+         "ETH": {"UP": 3, "DOWN": 6},
+         "BNB": {"UP": 3, "DOWN": 2},
+         "XRP": {"UP": 3, "DOWN": 6},
+         "LINK": {"UP": 3, "DOWN": 4},
+         "TRX": {"UP": 3, "DOWN": 6},
+         "EOS": {"UP": 3, "DOWN": 5},
+         "FIL": {"UP": 3, "DOWN": 6},
+         "AAVE": {"UP": 3, "DOWN": 4},
+         "DOT": {"UP": 3, "DOWN": 4},
+         "UNI": {"UP": 3, "DOWN": 6},
+         "YFI": {"UP": 3, "DOWN": 6},
+         "SUSHI": {"UP": 3, "DOWN": 7},
+         "BCH": {"UP": 2, "DOWN": 2},
+         "XTZ": {"UP": 3, "DOWN": 5},
+         "LTC": {"UP": 3, "DOWN": 6},
+         "ADA": {"UP": 3, "DOWN": 4},
+         "XLM": {"UP": 3, "DOWN": 6},
+         "SXP": {"UP": 4, "DOWN": 2},
+         "1INCH": {"UP": 2, "DOWN": 2}}
