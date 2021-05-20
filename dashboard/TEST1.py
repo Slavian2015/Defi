@@ -1,27 +1,27 @@
-import json
-import time, sys, os, requests
-import pandas as pd
-from binance.client import Client
-import traceback
-from datetime import datetime
-import warnings
-import talib as ta
-import logging
-from unicorn_fy.unicorn_fy import UnicornFy
-from time import strftime
-from unicorn_binance_websocket_api.unicorn_binance_websocket_api_manager import BinanceWebSocketApiManager
-
-sys.path.insert(0, r'/usr/local/WB/dashboard')
-import dbrools
-import Settings
-
-main_path_data = os.path.expanduser('/usr/local/WB/data/')
-warnings.filterwarnings("ignore")
-
-api_key = Settings.API_KEY
-api_secret = Settings.API_SECRET
-
-bclient = Client(api_key=api_key, api_secret=api_secret)
+# import json
+# import time, sys, os, requests
+# import pandas as pd
+# from binance.client import Client
+# import traceback
+# from datetime import datetime
+# import warnings
+# import talib as ta
+# import logging
+# from unicorn_fy.unicorn_fy import UnicornFy
+# from time import strftime
+# from unicorn_binance_websocket_api.unicorn_binance_websocket_api_manager import BinanceWebSocketApiManager
+#
+# sys.path.insert(0, r'/usr/local/WB/dashboard')
+# import dbrools
+# import Settings
+#
+# main_path_data = os.path.expanduser('/usr/local/WB/data/')
+# warnings.filterwarnings("ignore")
+#
+# api_key = Settings.API_KEY
+# api_secret = Settings.API_SECRET
+#
+# bclient = Client(api_key=api_key, api_secret=api_secret)
 
 """
 My History Trades
@@ -191,8 +191,8 @@ dd = [{'error': False,
                              'commissionAsset': 'BNB',
                              'tradeId': 3316730}]}}]
 
-for k, v in dd[0]:
-    print(k, v)
+# for k, v in dd[0]:
+#     print(k, v)
 
 rools = {"BTC": {"UP": 3, "DOWN": 5},
          "ETH": {"UP": 3, "DOWN": 6},
@@ -214,3 +214,9 @@ rools = {"BTC": {"UP": 3, "DOWN": 5},
          "XLM": {"UP": 3, "DOWN": 6},
          "SXP": {"UP": 4, "DOWN": 2},
          "1INCH": {"UP": 2, "DOWN": 2}}
+
+my_tp = float(0.0008943)
+n = round(my_tp, rools['TRX']['DOWN'])
+print(str(n), "=======", type(str(n)))
+
+

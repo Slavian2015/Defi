@@ -43,7 +43,7 @@ n_rools = {"BTC": {"UP": 3, "DOWN": 5},
            "ADA": {"UP": 3, "DOWN": 4},
            "XLM": {"UP": 3, "DOWN": 6},
            "SXP": {"UP": 4, "DOWN": 2},
-           "1INCH": {"UP": 2, "DOWN": 2}}
+           "1INCH": {"UP": 6, "DOWN": 2}}
 
 
 def bot_sendtext(bot_message):
@@ -161,7 +161,7 @@ class SsrmBot:
                                   symbol=f"{self.symbol.upper()}{self.new_side}USDT",
                                   side=2,
                                   amount=round(self.amount, 2),
-                                  price=round(self.my_tp, n_rools[self.symbol.upper()][self.new_side]))
+                                  price=str(round(self.my_tp, n_rools[self.symbol.upper()][self.new_side])))
 
         if reponse['error']:
             self.bot_ping = False

@@ -451,9 +451,9 @@ def my_trade_history():
 
         child = html.Tr([
             html.Th([html.P(v["symbol"], style={"min-width": "70px"})], style={"padding": "0", "margin": "0"}),
-            html.Th([html.P("{0:.3f}".format(float(v["amount"])), style={"min-width": "70px"})],
+            html.Th([html.P("{0:.6f}".format(float(v["amount"])), style={"min-width": "70px"})],
                     style={"padding": "0", "margin": "0"}),
-            html.Th([html.P("{0:.3f}".format(float(v["price"])), style={"min-width": "70px"})],
+            html.Th([html.P("{0:.6f}".format(float(v["price"])), style={"min-width": "70px"})],
                     style={"padding": "0", "margin": "0"}),
             html.Th([dbc.Badge(v["direct"], style={"min-width": "70px"},
                                color="success" if v["direct"] == "BUY" else "danger")],
