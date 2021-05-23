@@ -295,21 +295,20 @@ class SsrmBot:
             elif self.my_Stoch == 2 and df["slowk"].iloc[-1] <= 20:
                 self.my_Stoch = False
 
-            if self.my_Stoch:
-                if df["rsi"].iloc[-1] >= 50:
-                    self.my_RSI = 1
-                else:
-                    self.my_RSI = 2
+            if df["rsi"].iloc[-1] >= 50:
+                self.my_RSI = 1
+            else:
+                self.my_RSI = 2
 
             if self.my_Stoch == 1 and self.my_RSI == 1:
                 if df["hist"].iloc[-1] > 0 > df["hist"].iloc[-2] and self.rsi_signal > 70:
-                    self.my_sl = self.my_bid_up / 1.018
+                    self.my_sl = self.my_bid_up / 1.0165
                     self.my_tp = self.my_ask_up * 1.05
                     self.main_direction = self.my_RSI
                     self.place_new_order()
             elif self.my_Stoch == 2 and self.my_RSI == 2:
                 if df["hist"].iloc[-1] < 0 < df["hist"].iloc[-2] and self.rsi_signal < 30:
-                    self.my_sl = self.my_bid_down / 1.018
+                    self.my_sl = self.my_bid_down / 1.0165
                     self.my_tp = self.my_ask_down * 1.05
                     self.main_direction = self.my_RSI
                     self.place_new_order()
@@ -373,7 +372,7 @@ class SsrmBot:
                                         if self.my_ask_up > self.my_tp:
                                             self.close_tp_order()
                                             """ проверить по ID и сохранить ордер в БД"""
-                                        if self.my_bid_up <= self.my_sl:
+                                        if self.my_ask_up <= self.my_sl:
                                             """ отменить TP, Проверить и сохранить ордер в БД"""
                                             self.close_sl_order()
                                     else:
@@ -386,7 +385,7 @@ class SsrmBot:
                                         if self.my_ask_down > self.my_tp:
                                             self.close_tp_order()
                                             """ проверить по ID и сохранить ордер в БД"""
-                                        if self.my_bid_down <= self.my_sl:
+                                        if self.my_ask_down <= self.my_sl:
                                             """ отменить TP, Проверить и сохранить ордер в БД"""
                                             self.close_sl_order()
                                     else:

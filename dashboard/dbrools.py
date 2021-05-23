@@ -297,3 +297,11 @@ from datetime import datetime
 #     "date": f"{datetime.now().strftime('%d.%m.%Y')}"
 # }
 # insert_history(data=data)
+
+
+# new_keys = my_keys.find_one()
+# api_key = new_keys['bin']['key']
+# api_secret = new_keys['bin']['secret']
+#
+#
+# print(api_key, "\n", api_secret)
