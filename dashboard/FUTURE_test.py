@@ -20,7 +20,7 @@ warnings.filterwarnings("ignore")
 api_key = Settings.API_KEY
 api_secret = Settings.API_SECRET
 # testnet = True
-bclient = Client(api_key=api_key, api_secret=api_secret, testnet=True)
+bclient = Client(api_key=api_key, api_secret=api_secret)
 
 """
 CHECK FUTURE BALANCE
@@ -63,27 +63,37 @@ FUTURE ORDER
     3) Отменить все открытые ордера
 """
 
-# rep = bclient.futures_create_order(symbol='SUSHIUSDT', side='LONG', type='MARKET', quantity=100)
-# rep = bclient.futures_create_order(symbol='SUSHIUSDT', side='SHORT', type='MARKET', quantity=100)
-# print(rep)
+# rep = bclient.futures_create_order(symbol='TRXUSDT', side='BUY', type='MARKET', quantity=300)
+# # rep = bclient.futures_create_order(symbol='SUSHIUSDT', side='SHORT', type='MARKET', quantity=100)
+# print("OPEN position:\n", rep)
+# time.sleep(2)
 
-rep2 = bclient.futures_create_order(symbol='BTCUSDT',
-                                    side='BUY',
-                                    type='MARKET',
-                                    timeInForce='GTC',
-                                    quantity=100)
+# rep2 = bclient.futures_create_order(symbol='BTCUSDT',
+#                                     side='BUY',
+#                                     type='MARKET',
+#                                     timeInForce='GTC',
+#                                     quantity=100)
+#
+# print(rep2)
+#
+# rep3 = bclient.futures_create_order(symbol='TRXUSDT',
+#                                     side='SELL',
+#                                     type='TAKE_PROFIT',
+#                                     quantity=300,
+#                                     price=0.09,
+#                                     reduceOnly='true',
+#                                     stopPrice=0.09)
+#
+# print("OPEN TP: \n", rep3)
+# time.sleep(2)
+#
+# rep4 = bclient.futures_create_order(symbol='TRXUSDT',
+#                                     side='SELL',
+#                                     type='STOP_MARKET',
+#                                     reduceOnly='true',
+#                                     quantity=300,
+#                                     stopPrice=0.07)
+#
+# print("OPEN TP: \n", rep4)
 
-print(rep2)
 
-rep3 = bclient.futures_create_order(symbol='BTCUSDT',
-                                    side='SELL',
-                                    type='TAKE_PROFIT',
-                                    # type='STOP/STOP_MARKET  or TAKE_PROFIT/TAKE_PROFIT_MARKET',
-                                    timeInForce='GTC',
-                                    reduceOnly='true',
-                                    stopPrice=38000,
-                                    closePosition='true',
-                                    workingType="MARK_PRICE",
-                                    priceProtect="TRUE")
-
-print(rep3)

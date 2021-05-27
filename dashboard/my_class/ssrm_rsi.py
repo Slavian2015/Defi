@@ -344,7 +344,7 @@ class SsrmBot:
             if self.status:
                 self.status = False
 
-                binance_websocket_api_manager.create_stream(['kline_1m', 'kline_1h', 'depth5'],
+                binance_websocket_api_manager.create_stream(['kline_1m', 'kline_1h'],
                                                             [f'{self.symbol}usdt'],
                                                             stream_label="UnicornFy",
                                                             output="UnicornFy")

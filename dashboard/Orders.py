@@ -2,6 +2,7 @@ from binance.exceptions import BinanceAPIException, BinanceOrderException
 import dbrools
 import logging
 
+
 class CustomFormatter(logging.Formatter):
     """Logging Formatter to add colors and count warning / errors"""
 
@@ -58,6 +59,87 @@ def my_order(client=None, symbol=None, side=None, amount=None, price=None):
                 order = client.order_market_sell(
                     symbol=symbol,
                     quantity=amount)
+        my_reponse["result"] = order
+    except BinanceOrderException as e:
+        my_reponse["result"] = str(e)
+        my_reponse["error"] = True
+    except BinanceAPIException as e:
+        my_reponse["result"] = str(e)
+        my_reponse["error"] = True
+    return my_reponse
+
+
+def my_order_future(client=None, symbol=None, side=None, amount=None):
+    my_reponse = {"error": False, "result": None}
+    try:
+        if side == 1:
+            order = client.futures_create_order(
+                symbol=symbol,
+                side='BUY',
+                type='MARKET',
+                quantity=amount)
+        else:
+            order = client.futures_create_order(
+                symbol=symbol,
+                side='SELL',
+                type='MARKET',
+                quantity=amount)
+        my_reponse["result"] = order
+    except BinanceOrderException as e:
+        my_reponse["result"] = str(e)
+        my_reponse["error"] = True
+    except BinanceAPIException as e:
+        my_reponse["result"] = str(e)
+        my_reponse["error"] = True
+    return my_reponse
+
+
+def tp_future(client=None, symbol=None, side=None, price=None, amount=None):
+    my_reponse = {"error": False, "result": None}
+    try:
+        if side == 1:
+            order = client.futures_create_order(symbol=symbol,
+                                                side='SELL',
+                                                type='TAKE_PROFIT',
+                                                quantity=amount,
+                                                price=price,
+                                                reduceOnly='true',
+                                                stopPrice=price)
+        else:
+            order = client.futures_create_order(symbol=symbol,
+                                                side='BUY',
+                                                type='TAKE_PROFIT',
+                                                quantity=amount,
+                                                price=price,
+                                                reduceOnly='true',
+                                                stopPrice=price)
+        my_reponse["result"] = order
+    except BinanceOrderException as e:
+        my_reponse["result"] = str(e)
+        my_reponse["error"] = True
+    except BinanceAPIException as e:
+        my_reponse["result"] = str(e)
+        my_reponse["error"] = True
+    return my_reponse
+
+
+def sl_future(client=None, symbol=None, side=None, price=None, amount=None):
+    my_reponse = {"error": False, "result": None}
+    try:
+        if side == 1:
+            order = client.futures_create_order(symbol=symbol,
+                                                side='SELL',
+                                                type='STOP_MARKET',
+                                                reduceOnly='true',
+                                                quantity=amount,
+                                                stopPrice=price)
+        else:
+            order = client.futures_create_order(symbol=symbol,
+                                                side='BUY',
+                                                type='STOP_MARKET',
+                                                reduceOnly='true',
+                                                quantity=amount,
+                                                stopPrice=price)
         my_reponse["result"] = order
     except BinanceOrderException as e:
         my_reponse["result"] = str(e)
