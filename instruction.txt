@@ -66,6 +66,14 @@ python /usr/local/WB/backtests/BOT/bot_test.py
 
 python /usr/local/WB/backtests/BOT/BOT.py
 
+
+
+python /usr/local/WB/dashboard/FUTURE_test.py
+
+
+
+
+
 ============================================================
 
 python /usr/local/WB/backtests/TIME_TEST/bot_test.py
