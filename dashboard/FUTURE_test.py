@@ -68,13 +68,28 @@ FUTURE ORDER
 # print("OPEN position:\n", rep)
 # time.sleep(2)
 
-# rep2 = bclient.futures_create_order(symbol='BTCUSDT',
+# rep2 = bclient.futures_create_order(symbol='TRXUSDT',
 #                                     side='BUY',
 #                                     type='MARKET',
-#                                     timeInForce='GTC',
-#                                     quantity=100)
+#                                     quantity=300)
 #
 # print(rep2)
+
+# time.sleep(2)
+
+# my_orders = bclient.get_open_orders(symbol='TRXUSDT')
+#
+# print("\n\nALL :\n", my_orders)
+
+# my_orders = bclient.futures_get_order(symbol='TRXUSDT', orderId=3934202405)
+#
+# print("\n\nALL :\n", my_orders)
+
+# response = bclient.get_order(symbol='TRXUSDT', orderId="3934202405")
+#
+# print("\n\nONE ORDER\n", response)
+
+
 #
 # rep3 = bclient.futures_create_order(symbol='TRXUSDT',
 #                                     side='SELL',

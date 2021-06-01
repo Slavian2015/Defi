@@ -81,6 +81,9 @@ class SsrmBot:
         self.order = False
         self.order_id = False
 
+        self.order_id_tp = False
+        self.order_id_sl = False
+
         self.my_tp = 0
         self.my_sl = 0
 
@@ -111,15 +114,8 @@ class SsrmBot:
 
         if self.main_direction == 1:
             self.new_side = "LONG"
-            self.my_price = self.my_ask
         else:
             self.new_side = "SHORT"
-            self.my_price = self.my_bid
-
-        bot_message = f"Added {self.symbol} ({self.new_side}), \n{round(self.amount, n_rools[self.symbol.upper()]['decimals'])}, \n{round(self.my_price, n_rools[self.symbol.upper()]['price'])},\n SL {round(self.my_sl, n_rools[self.symbol.upper()]['price'])} / TP {round(self.my_tp, n_rools[self.symbol.upper()]['price'])}"
-
-        bot_sendtext(bot_message)
-        print("\n", bot_message)
 
         self.order = self.main_direction
 
@@ -138,7 +134,8 @@ class SsrmBot:
             dbrools.insert_history_new(data=reponse)
 
             data = {
-                "symbol": f"{self.symbol} ({self.new_side})",
+                "symbol": f"{self.symbol}",
+                "side": f"{self.new_side}",
                 "amount": round(self.amount, n_rools[self.symbol.upper()]["decimals"]),
                 "price": float(round(self.my_price, n_rools[self.symbol.upper()]['price'])),
                 "direct": 'BUY',
@@ -146,63 +143,87 @@ class SsrmBot:
                 "date": f"{datetime.now().strftime('%d.%m.%Y')}"
             }
             dbrools.insert_history(data=data)
+
+            bot_message = f"Added {self.symbol} ({self.new_side}), \n{round(self.amount, n_rools[self.symbol.upper()]['decimals'])}, \n{round(self.my_price, n_rools[self.symbol.upper()]['price'])},\n SL {round(self.my_sl, n_rools[self.symbol.upper()]['price'])} / TP {round(self.my_tp, n_rools[self.symbol.upper()]['price'])}"
+            bot_sendtext(bot_message)
+            print("\n", bot_message)
+
+            my_orders = self.bclient.futures_get_order(symbol=f"{self.symbol.upper()}USDT", orderId=self.order_id)
+
+            self.my_price = float(my_orders['avgPrice'])
+
+            if self.order == 1:
+                self.my_sl = self.my_price / 1.009
+                self.my_tp = self.my_price * 1.022
+            else:
+                self.my_sl = self.my_price * 1.009
+                self.my_tp = self.my_price / 1.022
+
             self.place_tp_order()
 
     def place_tp_order(self):
         reponse = Orders.tp_future(client=self.bclient,
                                    symbol=f"{self.symbol.upper()}USDT",
                                    side=self.main_direction,
-                                   price=str(round(self.my_tp, n_rools[self.symbol.upper()]['price'])))
+                                   price=str(round(self.my_tp, n_rools[self.symbol.upper()]['price'])),
+                                   amount=round(self.amount, n_rools[self.symbol.upper()]["decimals"]))
         if reponse['error']:
             self.bot_ping = False
             logging.info(f"TP order Error:\n {reponse}")
             bot_sendtext(f"TP order Error:\n {reponse}")
         else:
+            self.order_id_tp = reponse['result']['orderId']
             self.place_sl_order()
 
     def place_sl_order(self):
         reponse = Orders.sl_future(client=self.bclient,
                                    symbol=f"{self.symbol.upper()}USDT",
                                    side=self.main_direction,
-                                   price=str(round(self.my_sl, n_rools[self.symbol.upper()]['price'])))
+                                   price=str(round(self.my_sl, n_rools[self.symbol.upper()]['price'])),
+                                   amount=round(self.amount, n_rools[self.symbol.upper()]["decimals"]))
         if reponse['error']:
             self.bot_ping = False
             logging.info(f"TP order Error:\n {reponse}")
             bot_sendtext(f"TP order Error:\n {reponse}")
+        else:
+            self.order_id_sl = reponse['result']['orderId']
 
     def close_tp_order(self):
-        bot_message = f"QUIT {self.symbol.upper()}{self.new_side} , \n{round(self.amount, n_rools[self.symbol.upper()]['decimals'])}, \n{round(self.my_tp, n_rools[self.symbol.upper()]['price'])}, \n TAKE PROFIT"
+        bot_message = f"QUIT {self.symbol.upper()}({self.new_side}), \n{round(self.amount, n_rools[self.symbol.upper()]['decimals'])}, \n{round(self.my_tp, n_rools[self.symbol.upper()]['price'])}, \n TAKE PROFIT"
         bot_sendtext(bot_message)
         print("\n", bot_message)
         data = {
             "symbol": f"{self.symbol} ({self.new_side})",
             "amount": round(self.amount, n_rools[self.symbol.upper()]['decimals']),
-            "price": float(round(self.my_tp, n_rools[self.symbol.upper()]['price'])),
+            "price": round(self.my_tp, n_rools[self.symbol.upper()]['price']),
             "direct": 'SELL',
             "result": 2,
             "date": f"{datetime.now().strftime('%d.%m.%Y')}"
         }
         dbrools.insert_history(data=data)
-        # self.bclient.cancel_order(symbol=f"{self.symbol.upper()}USDT", orderId=self.order_id)
+        # self.bclient.cancel_order(symbol=f"{self.symbol.upper()}USDT", orderId=self.order_id_tp)
+        self.bclient.cancel_order(symbol=f"{self.symbol.upper()}USDT", orderId=self.order_id_sl)
+
         self.my_Stoch = False
         self.my_RSI = False
         self.order = False
         self.order_id = False
 
     def close_sl_order(self):
-        bot_message = f"QUIT {self.symbol.upper()}{self.new_side} , \n{round(self.amount, n_rools[self.symbol.upper()]['decimals'])}, \n{round(self.my_tp, n_rools[self.symbol.upper()]['price'])}, \n TAKE PROFIT"
+        bot_message = f"QUIT {self.symbol.upper()}({self.new_side}) , \n{round(self.amount, n_rools[self.symbol.upper()]['decimals'])}, \n{round(self.my_tp, n_rools[self.symbol.upper()]['price'])}, \n TAKE PROFIT"
         bot_sendtext(bot_message)
         print("\n", bot_message)
         data = {
             "symbol": f"{self.symbol} ({self.new_side})",
             "amount": round(self.amount, n_rools[self.symbol.upper()]['decimals']),
-            "price": float(round(self.my_sl, n_rools[self.symbol.upper()]['price'])),
+            "price": round(self.my_sl, n_rools[self.symbol.upper()]['price']),
             "direct": 'SELL',
             "result": 1,
             "date": f"{datetime.now().strftime('%d.%m.%Y')}"
         }
         dbrools.insert_history(data=data)
-        # self.bclient.cancel_order(symbol=f"{self.symbol.upper()}USDT", orderId=self.order_id)
+        self.bclient.cancel_order(symbol=f"{self.symbol.upper()}USDT", orderId=self.order_id_tp)
+        # self.bclient.cancel_order(symbol=f"{self.symbol.upper()}USDT", orderId=self.order_id_sl)
         self.my_Stoch = False
         self.my_RSI = False
         self.order = False
@@ -242,14 +263,10 @@ class SsrmBot:
 
             if self.my_Stoch == 1 and self.my_RSI == 1:
                 if df["hist"].iloc[-1] > 0 > df["hist"].iloc[-2] and self.rsi_signal > 70:
-                    self.my_sl = self.my_bid / 1.009
-                    self.my_tp = self.my_ask * 1.025
                     self.main_direction = self.my_RSI
                     self.place_new_order()
             elif self.my_Stoch == 2 and self.my_RSI == 2:
                 if df["hist"].iloc[-1] < 0 < df["hist"].iloc[-2] and self.rsi_signal < 30:
-                    self.my_sl = self.my_ask * 1.009
-                    self.my_tp = self.my_bid / 1.025
                     self.main_direction = self.my_RSI
                     self.place_new_order()
 
@@ -271,18 +288,25 @@ class SsrmBot:
     def run(self):
         bot_sendtext(f"FUTURE START {self.symbol.upper()}USDT")
         self.binance_websocket_api_manager = BinanceWebSocketApiManager(exchange="binance.com-futures",
-                                                                        output_default="UnicornFy")
-        self.binance_websocket_api_manager.create_stream(['kline_1m', 'kline_1h', 'depth5'],
+                                                                        output_default="dict")
+        self.binance_websocket_api_manager.create_stream(['kline_1m', 'kline_1h'],
                                                          [f'{self.symbol}usdt'],
                                                          stream_label="UnicornFy",
                                                          output="UnicornFy")
+        self.binance_websocket_api_manager.create_stream(['depth5'],
+                                                         [f'{self.symbol}usdt'],
+                                                         output="dict")
         while self.bot_ping:
             if self.status:
                 self.status = False
-                self.binance_websocket_api_manager.create_stream(['kline_1m', 'kline_1h', 'depth5'],
+                self.binance_websocket_api_manager.create_stream(['kline_1m', 'kline_1h'],
                                                                  [f'{self.symbol}usdt'],
                                                                  stream_label="UnicornFy",
                                                                  output="UnicornFy")
+
+                self.binance_websocket_api_manager.create_stream(['depth5'],
+                                                                 [f'{self.symbol}usdt'],
+                                                                 output="dict")
                 print(f"PARSER RESTART at {datetime.now().strftime('%H:%M:%S')}")
             else:
                 try:
@@ -292,9 +316,9 @@ class SsrmBot:
                     stream_buffer = self.binance_websocket_api_manager.pop_stream_data_from_stream_buffer()
                     if stream_buffer:
                         try:
-                            if stream_buffer['event_type'] == "depth":
-                                self.my_ask = float(stream_buffer['asks'][0][0])
-                                self.my_bid = float(stream_buffer['bids'][0][0])
+                            if "stream" in stream_buffer:
+                                self.my_ask = float(stream_buffer['data']['a'][0][0])
+                                self.my_bid = float(stream_buffer['data']['b'][0][0])
 
                                 if self.order == 1:
                                     if self.my_ask > self.my_tp:
@@ -309,36 +333,34 @@ class SsrmBot:
                                         """ отменить TP, Проверить и сохранить ордер в БД"""
                                         self.close_tp_order()
                                 else:
-                                    self.amount = self.min_amount / float(stream_buffer['asks'][0][0])
+                                    self.amount = self.min_amount / float(stream_buffer['data']['a'][0][0])
                             else:
-                                if stream_buffer['event_type'] == "kline":
-                                    if stream_buffer['kline']['interval'] == "1m":
-                                        if stream_buffer['event_time'] >= stream_buffer['kline']['kline_close_time']:
-                                            new_row = [stream_buffer['kline']['kline_start_time'],
-                                                       stream_buffer['kline']['open_price'],
-                                                       stream_buffer['kline']['high_price'],
-                                                       stream_buffer['kline']['low_price'],
-                                                       stream_buffer['kline']['close_price'],
-                                                       stream_buffer['kline']['base_volume'],
-                                                       stream_buffer['kline']['kline_close_time'],
-                                                       None, None, None, None, None]
-                                            self.main_data.append(new_row)
-                                            del self.main_data[0]
-                                            self.algorithm()
-                                    elif stream_buffer['kline']['interval'] == "1h":
-                                        if stream_buffer['event_time'] >= stream_buffer['kline']['kline_close_time']:
-                                            new_row = [stream_buffer['kline']['kline_start_time'],
-                                                       stream_buffer['kline']['open_price'],
-                                                       stream_buffer['kline']['high_price'],
-                                                       stream_buffer['kline']['low_price'],
-                                                       stream_buffer['kline']['close_price'],
-                                                       stream_buffer['kline']['base_volume'],
-                                                       stream_buffer['kline']['kline_close_time'],
-                                                       None, None, None, None, None]
-                                            self.main_data_hour.append(new_row)
-                                            del self.main_data_hour[0]
-                                            self.algorithm_rsi()
-
+                                if stream_buffer['kline']['interval'] == "1m":
+                                    if stream_buffer['event_time'] >= stream_buffer['kline']['kline_close_time']:
+                                        new_row = [stream_buffer['kline']['kline_start_time'],
+                                                   stream_buffer['kline']['open_price'],
+                                                   stream_buffer['kline']['high_price'],
+                                                   stream_buffer['kline']['low_price'],
+                                                   stream_buffer['kline']['close_price'],
+                                                   stream_buffer['kline']['base_volume'],
+                                                   stream_buffer['kline']['kline_close_time'],
+                                                   None, None, None, None, None]
+                                        self.main_data.append(new_row)
+                                        del self.main_data[0]
+                                        self.algorithm()
+                                elif stream_buffer['kline']['interval'] == "1h":
+                                    if stream_buffer['event_time'] >= stream_buffer['kline']['kline_close_time']:
+                                        new_row = [stream_buffer['kline']['kline_start_time'],
+                                                   stream_buffer['kline']['open_price'],
+                                                   stream_buffer['kline']['high_price'],
+                                                   stream_buffer['kline']['low_price'],
+                                                   stream_buffer['kline']['close_price'],
+                                                   stream_buffer['kline']['base_volume'],
+                                                   stream_buffer['kline']['kline_close_time'],
+                                                   None, None, None, None, None]
+                                        self.main_data_hour.append(new_row)
+                                        del self.main_data_hour[0]
+                                        self.algorithm_rsi()
                             time.sleep(0.2)
                         except KeyError:
                             print(f"Exception :\n {stream_buffer}")
