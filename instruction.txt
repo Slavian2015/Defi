@@ -78,7 +78,7 @@ python /usr/local/WB/dashboard/FUTURE_test.py
 
 python /usr/local/WB/backtests/TIME_TEST/bot_test.py
 python /usr/local/WB/dashboard/BOT_DAY_2.py
-python /usr/local/WB/dashboard/TEST1.py
+python /usr/local/WB/dashboard/TEST3.py
 
 
 =============================================================

@@ -153,9 +153,9 @@ binance_websocket_api_manager.create_stream(['kline_1m'],
                                                  stream_label="UnicornFy",
                                                  output="UnicornFy")
 
-binance_websocket_api_manager.create_stream(['depth5'],
+binance_websocket_api_manager.create_stream(['trade'],
                                             ['trxusdt'],
-                                            output="dict")
+                                            output="UnicornFy")
 
 while bot_ping:
     stream_buffer = binance_websocket_api_manager.pop_stream_data_from_stream_buffer()
@@ -165,20 +165,21 @@ while bot_ping:
             bot_ping = False
             print("bot_ping", bot_ping)
         if stream_buffer:
+            # print(stream_buffer, "\n===========================================================")
 
             try:
-                if "stream" in stream_buffer:
-                    my_ask = float(stream_buffer['data']['a'][0][0])
-                    my_bid = float(stream_buffer['data']['b'][0][0])
-
-                    print("\n===========================================================\n", "depth5\n", my_ask, my_bid)
+                if stream_buffer['event_type'] == "trade":
+                    my_ask = float(stream_buffer['price'])
+                    my_bid = float(stream_buffer['quantity'])
+                    # pass
+                    print("\n===========================================================\n", "trade\n", my_ask, my_bid)
                 else:
-                    print("\n===========================================================\n", "kline\n", stream_buffer)
+                    pass
+                    # print("\n===========================================================\n", "kline\n", stream_buffer)
                 # print(stream_buffer, "\n===========================================================")
-                time.sleep(2)
+                # time.sleep(2)
             except KeyError:
                 print(f"Exception :\n {stream_buffer}")
-
 
     except Exception as exc:
         bot_ping = False

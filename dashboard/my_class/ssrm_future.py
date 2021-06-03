@@ -67,8 +67,8 @@ class SsrmBot:
 
         self.main_data = []
         self.main_data_hour = []
-        self.my_ask = 0
-        self.my_bid = 0
+        self.trade = 0
+        # self.my_bid = 0
         self.my_price = 0
 
         self.status = False
@@ -202,8 +202,6 @@ class SsrmBot:
         dbrools.insert_history(data=data)
 
         self.bclient.futures_cancel_order(symbol=f"{self.symbol.upper()}USDT", origClientOrderId=self.order_id_sl)
-        # self.bclient.cancel_order(symbol=f"{self.symbol.upper()}USDT", orderId=self.order_id_tp)
-        # self.bclient.cancel_order(symbol=f"{self.symbol.upper()}USDT", orderId=self.order_id_sl)
 
         self.my_Stoch = False
         self.my_RSI = False
@@ -225,8 +223,6 @@ class SsrmBot:
         dbrools.insert_history(data=data)
 
         self.bclient.futures_cancel_order(symbol=f"{self.symbol.upper()}USDT", origClientOrderId=self.order_id_tp)
-        # self.bclient.cancel_order(symbol=f"{self.symbol.upper()}USDT", orderId=self.order_id_tp)
-        # self.bclient.cancel_order(symbol=f"{self.symbol.upper()}USDT", orderId=self.order_id_sl)
         self.my_Stoch = False
         self.my_RSI = False
         self.order = False
@@ -296,9 +292,9 @@ class SsrmBot:
                                                          [f'{self.symbol}usdt'],
                                                          stream_label="UnicornFy",
                                                          output="UnicornFy")
-        self.binance_websocket_api_manager.create_stream(['depth5'],
+        self.binance_websocket_api_manager.create_stream(['trade'],
                                                          [f'{self.symbol}usdt'],
-                                                         output="dict")
+                                                         output="UnicornFy")
         while self.bot_ping:
             if self.status:
                 self.status = False
@@ -307,9 +303,9 @@ class SsrmBot:
                                                                  stream_label="UnicornFy",
                                                                  output="UnicornFy")
 
-                self.binance_websocket_api_manager.create_stream(['depth5'],
+                self.binance_websocket_api_manager.create_stream(['trade'],
                                                                  [f'{self.symbol}usdt'],
-                                                                 output="dict")
+                                                                 output="UnicornFy")
                 print(f"PARSER RESTART at {datetime.now().strftime('%H:%M:%S')}")
             else:
                 try:
@@ -319,24 +315,21 @@ class SsrmBot:
                     stream_buffer = self.binance_websocket_api_manager.pop_stream_data_from_stream_buffer()
                     if stream_buffer:
                         try:
-                            if "stream" in stream_buffer:
-                                self.my_ask = float(stream_buffer['data']['a'][0][0])
-                                self.my_bid = float(stream_buffer['data']['b'][0][0])
+                            if stream_buffer['event_type'] == "trade":
+                                self.trade = float(stream_buffer['price'])
 
                                 if self.order == 1:
-                                    if self.my_ask > self.my_tp:
+                                    if self.trade > self.my_tp:
                                         self.close_tp_order()
-                                    if self.my_bid <= self.my_sl:
+                                    if self.trade <= self.my_sl:
                                         self.close_sl_order()
                                 elif self.order == 2:
-                                    if self.my_ask > self.my_sl:
+                                    if self.trade > self.my_sl:
                                         self.close_sl_order()
-                                        """ проверить по ID и сохранить ордер в БД"""
-                                    if self.my_bid <= self.my_tp:
-                                        """ отменить TP, Проверить и сохранить ордер в БД"""
+                                    if self.trade <= self.my_tp:
                                         self.close_tp_order()
                                 else:
-                                    self.amount = self.min_amount / float(stream_buffer['data']['a'][0][0])
+                                    self.amount = self.min_amount / self.trade
                             else:
                                 if stream_buffer['kline']['interval'] == "1m":
                                     if stream_buffer['event_time'] >= stream_buffer['kline']['kline_close_time']:
@@ -364,7 +357,7 @@ class SsrmBot:
                                         self.main_data_hour.append(new_row)
                                         del self.main_data_hour[0]
                                         self.algorithm_rsi()
-                            time.sleep(0.2)
+                            time.sleep(0.1)
                         except KeyError:
                             print(f"Exception :\n {stream_buffer}")
                             time.sleep(0.5)
