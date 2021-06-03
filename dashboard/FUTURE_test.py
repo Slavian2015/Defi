@@ -73,34 +73,35 @@ FUTURE ORDER
 #                                     type='MARKET',
 #                                     quantity=300)
 #
-# print(rep2)
-
+# print("MAIN ORDER :\n", rep2)
+#
 # time.sleep(2)
 
 # my_orders = bclient.get_open_orders(symbol='TRXUSDT')
 #
 # print("\n\nALL :\n", my_orders)
-
+#
 # my_orders = bclient.futures_get_order(symbol='TRXUSDT', orderId=3934202405)
 #
 # print("\n\nALL :\n", my_orders)
-
+#
 # response = bclient.get_order(symbol='TRXUSDT', orderId="3934202405")
 #
 # print("\n\nONE ORDER\n", response)
 
 
-#
-# rep3 = bclient.futures_create_order(symbol='TRXUSDT',
-#                                     side='SELL',
-#                                     type='TAKE_PROFIT',
-#                                     quantity=300,
-#                                     price=0.09,
-#                                     reduceOnly='true',
-#                                     stopPrice=0.09)
-#
-# print("OPEN TP: \n", rep3)
-# time.sleep(2)
+
+###############################################################
+rep3 = bclient.futures_create_order(symbol='TRXUSDT',
+                                    side='SELL',
+                                    type='TAKE_PROFIT',
+                                    quantity=300,
+                                    price=0.09,
+                                    reduceOnly='true',
+                                    stopPrice=0.09)
+
+print("OPEN TP: \n", rep3)
+# # time.sleep(2)
 #
 # rep4 = bclient.futures_create_order(symbol='TRXUSDT',
 #                                     side='SELL',
@@ -109,6 +110,22 @@ FUTURE ORDER
 #                                     quantity=300,
 #                                     stopPrice=0.07)
 #
-# print("OPEN TP: \n", rep4)
+# print("OPEN SL: \n", rep4)
+# .cancel_all_orders(symbol="TRXUSDT")
+
+# rep3 = bclient.futures_cancel_order(symbol="TRXUSDT", origClientOrderId="fzL6wxNLy5vcOmnxcRNvp1")
+#
+#
+# print("CLOSE TP: \n", rep3)
 
 
+"""
+
+MAIN ORDER :
+ {'orderId': 4001123715, 'symbol': 'TRXUSDT', 'status': 'NEW', 'clientOrderId': 'vOILkh2HWqi980JDPkdSkh', 'price': '0', 'avgPrice': '0.00000', 'origQty': '300', 'executedQty': '0', 'cumQty': '0', 'cumQuote': '0', 'timeInForce': 'GTC', 'type': 'MARKET', 'reduceOnly': False, 'closePosition': False, 'side': 'BUY', 'positionSide': 'BOTH', 'stopPrice': '0', 'workingType': 'CONTRACT_PRICE', 'priceProtect': False, 'origType': 'MARKET', 'updateTime': 1622705168358}
+OPEN TP: 
+ {'orderId': 4001123853, 'symbol': 'TRXUSDT', 'status': 'NEW', 'clientOrderId': 'fzL6wxNLy5vcOmnxcRNvp1', 'price': '0.09000', 'avgPrice': '0.00000', 'origQty': '300', 'executedQty': '0', 'cumQty': '0', 'cumQuote': '0', 'timeInForce': 'GTC', 'type': 'TAKE_PROFIT', 'reduceOnly': True, 'closePosition': False, 'side': 'SELL', 'positionSide': 'BOTH', 'stopPrice': '0.09000', 'workingType': 'CONTRACT_PRICE', 'priceProtect': False, 'origType': 'TAKE_PROFIT', 'updateTime': 1622705170635}
+OPEN SL: 
+ {'orderId': 4001123867, 'symbol': 'TRXUSDT', 'status': 'NEW', 'clientOrderId': '3xvW9KD9S56VkzB9EuMaS1', 'price': '0', 'avgPrice': '0.00000', 'origQty': '300', 'executedQty': '0', 'cumQty': '0', 'cumQuote': '0', 'timeInForce': 'GTC', 'type': 'STOP_MARKET', 'reduceOnly': True, 'closePosition': False, 'side': 'SELL', 'positionSide': 'BOTH', 'stopPrice': '0.07000', 'workingType': 'CONTRACT_PRICE', 'priceProtect': False, 'origType': 'STOP_MARKET', 'updateTime': 1622705170900}
+
+"""

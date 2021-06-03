@@ -172,7 +172,7 @@ class SsrmBot:
             logging.info(f"TP order Error:\n {reponse}")
             bot_sendtext(f"TP order Error:\n {reponse}")
         else:
-            self.order_id_tp = reponse['result']['orderId']
+            self.order_id_tp = reponse['result']['clientOrderId']
             self.place_sl_order()
 
     def place_sl_order(self):
@@ -186,10 +186,10 @@ class SsrmBot:
             logging.info(f"TP order Error:\n {reponse}")
             bot_sendtext(f"TP order Error:\n {reponse}")
         else:
-            self.order_id_sl = reponse['result']['orderId']
+            self.order_id_sl = reponse['result']['clientOrderId']
 
     def close_tp_order(self):
-        bot_message = f"QUIT {self.symbol.upper()}({self.new_side}), \n{round(self.amount, n_rools[self.symbol.upper()]['decimals'])}, \n{round(self.my_tp, n_rools[self.symbol.upper()]['price'])}, \n TAKE PROFIT"
+        bot_message = f"QUIT {self.symbol.upper()} ({self.new_side}), \n{round(self.amount, n_rools[self.symbol.upper()]['decimals'])}, \n{round(self.my_tp, n_rools[self.symbol.upper()]['price'])}, \n TAKE PROFIT"
         bot_sendtext(bot_message)
         print("\n", bot_message)
         data = {
@@ -201,8 +201,10 @@ class SsrmBot:
             "date": f"{datetime.now().strftime('%d.%m.%Y')}"
         }
         dbrools.insert_history(data=data)
+
+        self.bclient.futures_cancel_order(symbol=f"{self.symbol.upper()}USDT", origClientOrderId=self.order_id_sl)
         # self.bclient.cancel_order(symbol=f"{self.symbol.upper()}USDT", orderId=self.order_id_tp)
-        self.bclient.cancel_order(symbol=f"{self.symbol.upper()}USDT", orderId=self.order_id_sl)
+        # self.bclient.cancel_order(symbol=f"{self.symbol.upper()}USDT", orderId=self.order_id_sl)
 
         self.my_Stoch = False
         self.my_RSI = False
@@ -210,7 +212,7 @@ class SsrmBot:
         self.order_id = False
 
     def close_sl_order(self):
-        bot_message = f"QUIT {self.symbol.upper()}({self.new_side}) , \n{round(self.amount, n_rools[self.symbol.upper()]['decimals'])}, \n{round(self.my_tp, n_rools[self.symbol.upper()]['price'])}, \n TAKE PROFIT"
+        bot_message = f"QUIT {self.symbol.upper()} ({self.new_side}), \n{round(self.amount, n_rools[self.symbol.upper()]['decimals'])}, \n{round(self.my_tp, n_rools[self.symbol.upper()]['price'])}, \n STOP LOSS"
         bot_sendtext(bot_message)
         print("\n", bot_message)
         data = {
@@ -222,7 +224,9 @@ class SsrmBot:
             "date": f"{datetime.now().strftime('%d.%m.%Y')}"
         }
         dbrools.insert_history(data=data)
-        self.bclient.cancel_order(symbol=f"{self.symbol.upper()}USDT", orderId=self.order_id_tp)
+
+        self.bclient.futures_cancel_order(symbol=f"{self.symbol.upper()}USDT", origClientOrderId=self.order_id_tp)
+        # self.bclient.cancel_order(symbol=f"{self.symbol.upper()}USDT", orderId=self.order_id_tp)
         # self.bclient.cancel_order(symbol=f"{self.symbol.upper()}USDT", orderId=self.order_id_sl)
         self.my_Stoch = False
         self.my_RSI = False

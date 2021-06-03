@@ -241,7 +241,7 @@ def update_tel_keys(new_key, new_secret):
 # d = get_full_data()
 # print(d["data"]["ETHUSDT"])
 
-
+# my_history.remove({})
 
 # my_active.remove({})
 # my_keys.remove({})
@@ -272,7 +272,7 @@ from datetime import datetime
 #     "amount": 1212,
 #     "price": 121,
 #     "direct": 'SELL',
-#     "result": 1,
+#     "result": 2,
 #     "date": f"{datetime.now().strftime('%d.%m.%Y')}"
 # }
 # insert_history(data=data)
