@@ -133,8 +133,18 @@ class SsrmBot:
             logging.info(f"New order:\n {reponse}")
             dbrools.insert_history_new(data=reponse)
 
+            my_orders = self.bclient.futures_get_order(symbol=f"{self.symbol.upper()}USDT", orderId=self.order_id)
+            self.my_price = float(my_orders['avgPrice'])
+
+            if self.order == 1:
+                self.my_sl = self.my_price / 1.009
+                self.my_tp = self.my_price * 1.022
+            else:
+                self.my_sl = self.my_price * 1.009
+                self.my_tp = self.my_price / 1.022
+
             data = {
-                "symbol": f"{self.symbol}",
+                "symbol": f"{self.symbol} ({self.new_side})",
                 "side": f"{self.new_side}",
                 "amount": round(self.amount, n_rools[self.symbol.upper()]["decimals"]),
                 "price": float(round(self.my_price, n_rools[self.symbol.upper()]['price'])),
@@ -147,17 +157,6 @@ class SsrmBot:
             bot_message = f"Added {self.symbol} ({self.new_side}), \n{round(self.amount, n_rools[self.symbol.upper()]['decimals'])}, \n{round(self.my_price, n_rools[self.symbol.upper()]['price'])},\n SL {round(self.my_sl, n_rools[self.symbol.upper()]['price'])} / TP {round(self.my_tp, n_rools[self.symbol.upper()]['price'])}"
             bot_sendtext(bot_message)
             print("\n", bot_message)
-
-            my_orders = self.bclient.futures_get_order(symbol=f"{self.symbol.upper()}USDT", orderId=self.order_id)
-
-            self.my_price = float(my_orders['avgPrice'])
-
-            if self.order == 1:
-                self.my_sl = self.my_price / 1.009
-                self.my_tp = self.my_price * 1.022
-            else:
-                self.my_sl = self.my_price * 1.009
-                self.my_tp = self.my_price / 1.022
 
             self.place_tp_order()
 
