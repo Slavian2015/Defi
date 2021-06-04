@@ -168,23 +168,29 @@ def my_balance(client=None):
     n = 0
     rep = True
     error = None
-
-    sectors = ["USDT", "ETHUP"]
+    my_usd = None
+    my_future_usd = None
 
     while rep and n < 10:
         try:
             my_bal = client.get_account()
-
-            now_list = []
             for i in my_bal["balances"]:
-                dbrools.update_balances(i['asset'], i['free'])
-                now_list.append(i['asset'])
+                if i['asset'] == "USDT":
+                    my_usd = i['free']
+                else:
+                    dbrools.update_balances(i['asset'], i['free'])
+
+            my_future_bal = client.futures_account_balance()
+            for i in my_future_bal:
+                if i["asset"] == "USDT":
+                    my_future_usd = i["balance"]
+
             rep = False
             my_reponse["result"] = "ok"
-
-            for i in sectors:
-                if i not in now_list:
-                    dbrools.update_balances(i, 0)
+            if my_usd:
+                dbrools.update_balances("USDT", float(float(my_future_usd) + float(my_usd)))
+            else:
+                dbrools.update_balances("USDT", my_future_bal)
             return my_reponse
 
         except BinanceAPIException as e:

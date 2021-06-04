@@ -25,10 +25,10 @@ bclient = Client(api_key=api_key, api_secret=api_secret)
 """
 CHECK FUTURE BALANCE
 """
-# my_bal = bclient.futures_account_balance()
-#
-# for i in my_bal:
-#     print(i["asset"], " : ", i["balance"])
+my_bal = bclient.futures_account_balance()
+
+for i in my_bal:
+    print(i["asset"], " : ", i["balance"])
 
 
 """
@@ -92,15 +92,15 @@ FUTURE ORDER
 
 
 ###############################################################
-rep3 = bclient.futures_create_order(symbol='TRXUSDT',
-                                    side='SELL',
-                                    type='TAKE_PROFIT_MARKET',
-                                    quantity=300,
-                                    price=0.09,
-                                    reduceOnly='true',
-                                    stopPrice=0.09)
-
-print("OPEN TP: \n", rep3)
+# rep3 = bclient.futures_create_order(symbol='TRXUSDT',
+#                                     side='SELL',
+#                                     type='TAKE_PROFIT_MARKET',
+#                                     quantity=300,
+#                                     price=0.09,
+#                                     reduceOnly='true',
+#                                     stopPrice=0.09)
+#
+# print("OPEN TP: \n", rep3)
 # # time.sleep(2)
 #
 # rep4 = bclient.futures_create_order(symbol='TRXUSDT',
@@ -129,3 +129,4 @@ OPEN SL:
  {'orderId': 4001123867, 'symbol': 'TRXUSDT', 'status': 'NEW', 'clientOrderId': '3xvW9KD9S56VkzB9EuMaS1', 'price': '0', 'avgPrice': '0.00000', 'origQty': '300', 'executedQty': '0', 'cumQty': '0', 'cumQuote': '0', 'timeInForce': 'GTC', 'type': 'STOP_MARKET', 'reduceOnly': True, 'closePosition': False, 'side': 'SELL', 'positionSide': 'BOTH', 'stopPrice': '0.07000', 'workingType': 'CONTRACT_PRICE', 'priceProtect': False, 'origType': 'STOP_MARKET', 'updateTime': 1622705170900}
 
 """
+
