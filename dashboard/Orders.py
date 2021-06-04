@@ -100,17 +100,15 @@ def tp_future(client=None, symbol=None, side=None, price=None, amount=None):
         if side == 1:
             order = client.futures_create_order(symbol=symbol,
                                                 side='SELL',
-                                                type='TAKE_PROFIT',
+                                                type='TAKE_PROFIT_MARKET',
                                                 quantity=amount,
-                                                price=price,
                                                 reduceOnly='true',
                                                 stopPrice=price)
         else:
             order = client.futures_create_order(symbol=symbol,
                                                 side='BUY',
-                                                type='TAKE_PROFIT',
+                                                type='TAKE_PROFIT_MARKET',
                                                 quantity=amount,
-                                                price=price,
                                                 reduceOnly='true',
                                                 stopPrice=price)
         my_reponse["result"] = order

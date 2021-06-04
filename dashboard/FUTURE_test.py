@@ -94,7 +94,7 @@ FUTURE ORDER
 ###############################################################
 rep3 = bclient.futures_create_order(symbol='TRXUSDT',
                                     side='SELL',
-                                    type='TAKE_PROFIT',
+                                    type='TAKE_PROFIT_MARKET',
                                     quantity=300,
                                     price=0.09,
                                     reduceOnly='true',

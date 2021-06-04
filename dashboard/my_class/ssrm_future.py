@@ -319,12 +319,12 @@ class SsrmBot:
                                 self.trade = float(stream_buffer['price'])
 
                                 if self.order == 1:
-                                    if self.trade > self.my_tp:
+                                    if self.trade >= self.my_tp:
                                         self.close_tp_order()
                                     if self.trade <= self.my_sl:
                                         self.close_sl_order()
                                 elif self.order == 2:
-                                    if self.trade > self.my_sl:
+                                    if self.trade >= self.my_sl:
                                         self.close_sl_order()
                                     if self.trade <= self.my_tp:
                                         self.close_tp_order()
