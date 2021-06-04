@@ -295,6 +295,12 @@ class SsrmBot:
         self.binance_websocket_api_manager.create_stream(['trade'],
                                                          [f'{self.symbol}usdt'],
                                                          output="UnicornFy")
+
+        self.binance_websocket_api_manager.create_stream('arr', '!userData',
+                                                         api_key=self.api_key, api_secret=self.api_secret,
+                                                         output="dict"
+                                                         )
+
         while self.bot_ping:
             if self.status:
                 self.status = False
@@ -315,21 +321,22 @@ class SsrmBot:
                     stream_buffer = self.binance_websocket_api_manager.pop_stream_data_from_stream_buffer()
                     if stream_buffer:
                         try:
-                            if stream_buffer['event_type'] == "trade":
+                            if "e" in stream_buffer:
+                                if stream_buffer['e'] == 'ACCOUNT_UPDATE':
+                                    if stream_buffer['a']['P'][0]['s'] == f'{self.symbol}usdt'.upper() and stream_buffer['a']['P'][0]['pa'] == "0":
+                                        if self.order == 1:
+                                            if self.trade >= self.my_price:
+                                                self.close_tp_order()
+                                            if self.trade < self.my_price:
+                                                self.close_sl_order()
+                                        elif self.order == 2:
+                                            if self.trade > self.my_price:
+                                                self.close_sl_order()
+                                            if self.trade <= self.my_price:
+                                                self.close_tp_order()
+                            elif stream_buffer['event_type'] == "trade":
                                 self.trade = float(stream_buffer['price'])
-
-                                if self.order == 1:
-                                    if self.trade >= self.my_tp:
-                                        self.close_tp_order()
-                                    if self.trade <= self.my_sl:
-                                        self.close_sl_order()
-                                elif self.order == 2:
-                                    if self.trade >= self.my_sl:
-                                        self.close_sl_order()
-                                    if self.trade <= self.my_tp:
-                                        self.close_tp_order()
-                                else:
-                                    self.amount = self.min_amount / self.trade
+                                self.amount = self.min_amount / self.trade
                             else:
                                 if stream_buffer['kline']['interval'] == "1m":
                                     if stream_buffer['event_time'] >= stream_buffer['kline']['kline_close_time']:
