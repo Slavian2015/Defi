@@ -133,6 +133,8 @@ class SsrmBot:
             logging.info(f"New order:\n {reponse}")
             dbrools.insert_history_new(data=reponse)
 
+            time.sleep(1)
+
             my_orders = self.bclient.futures_get_order(symbol=f"{self.symbol.upper()}USDT", orderId=self.order_id)
             self.my_price = float(my_orders['avgPrice'])
 
@@ -312,6 +314,12 @@ class SsrmBot:
                 self.binance_websocket_api_manager.create_stream(['trade'],
                                                                  [f'{self.symbol}usdt'],
                                                                  output="UnicornFy")
+
+                self.binance_websocket_api_manager.create_stream('arr', '!userData',
+                                                                 api_key=self.api_key, api_secret=self.api_secret,
+                                                                 output="dict"
+                                                                 )
+
                 print(f"PARSER RESTART at {datetime.now().strftime('%H:%M:%S')}")
             else:
                 try:
