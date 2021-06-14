@@ -96,3 +96,31 @@ python /usr/local/WB/dashboard/my_class/ssrm.py --symbol="bnb" --amount="3" --si
 
 python /usr/local/WB/dashboard/my_class/ssrm.py --symbol="link" --amount="3" --side="buy"
 python /usr/local/WB/dashboard/my_class/ssrm.py --symbol="link" --amount="22" --side="sell"
+
+
+
+
+
+
+##############################################################################
+# sudo docker image build -t my-pay .
+# sudo docker run -p 5001:5001 -d my-pay
+
+# sudo docker run −it 05fbf5281c0afd893d79cc8bef658046ea05e57b7e091965d60d8aad3a80d4b0 bash
+
+# heroku stack:set container
+
+# heroku container:push web --app mypaysys
+# sudo heroku container:release web --app mypaysys
+
+
+# sudo docker exec -it b0bfa83e6245b9641e99ed6eead9b39ff0fa3d3ea8932dba0763b64772028b94 bash
+
+# ps aux | grep python
+
+
+# sudo docker stop 97645c517fb45d213d2f042337243ae0658990d142912a551b21f4fc96028aa3
+# sudo docker rm 97645c517fb45d213d2f042337243ae0658990d142912a551b21f4fc96028aa3
+
+
+
