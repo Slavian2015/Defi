@@ -24,5 +24,7 @@ RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz && \
   make install
 RUN rm -R ta-lib ta-lib-0.4.0-src.tar.gz
 RUN pip install TA-Lib
+RUN pip install cython
+RUN pip install zigzag
 
 ENTRYPOINT ["docker-entrypoint.sh"]
