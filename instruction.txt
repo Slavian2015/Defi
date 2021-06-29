@@ -98,7 +98,7 @@ python /usr/local/WB/dashboard/my_class/ssrm.py --symbol="link" --amount="3" --s
 python /usr/local/WB/dashboard/my_class/ssrm.py --symbol="link" --amount="22" --side="sell"
 
 
-
+python /usr/local/WB/dashboard/my_class/combo.py
 
 
 
