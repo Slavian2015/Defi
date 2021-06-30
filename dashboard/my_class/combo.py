@@ -199,6 +199,51 @@ class SsrmBot:
         #
         #     self.place_tp_order()
 
+    def place_tp_sl(self, newsymbol, my_price, my_date):
+
+        if self.main_BD[newsymbol]['direction'] == 1:
+            my_sl = my_price / 1.01
+            my_tp = my_price * 1.021
+        else:
+            my_sl = my_price * 1.01
+            my_tp = my_price / 1.021
+
+        self.main_BD[newsymbol]['ap'] = my_price
+        self.main_BD[newsymbol]['date'] = my_date
+        self.main_BD[newsymbol]['tp'] = my_tp
+        self.main_BD[newsymbol]['sl'] = my_sl
+
+        pid = subprocess.Popen(["python",
+                                "/usr/local/WB/dashboard/combo_orders.py",
+                                f'--symbol={newsymbol}',
+                                f'--amount={self.main_BD[newsymbol]["amount"]}',
+                                f'--decimalsp={n_rools[newsymbol]["price"]}',
+                                f'--decimals={n_rools[newsymbol]["decimals"]}',
+                                f'--main_direction={self.main_BD[newsymbol]["direction"]}'
+                                f'--my_sl={my_sl}',
+                                f'--my_tp={my_tp}',
+                                ]).pid
+
+
+
+        data = {
+            "symbol": f"{self.symbol} ({self.new_side})",
+            "side": f"{self.new_side}",
+            "amount": round(self.amount, n_rools[self.symbol.upper()]["decimals"]),
+            "price": float(round(self.my_price, n_rools[self.symbol.upper()]['price'])),
+            "direct": 'BUY',
+            "result": 0,
+            "date": f"{my_date}"
+        }
+        dbrools.insert_history(data=data)
+
+        bot_message = f"Added {self.symbol} ({self.new_side}), \n{round(self.amount, n_rools[self.symbol.upper()]['decimals'])}, \n{round(self.my_price, n_rools[self.symbol.upper()]['price'])},\n SL {round(self.my_sl, n_rools[self.symbol.upper()]['price'])} / TP {round(self.my_tp, n_rools[self.symbol.upper()]['price'])}"
+        bot_sendtext(bot_message)
+        print("\n", bot_message)
+
+
+        return
+
     def algorithm(self, current_symbol):
         df = pd.DataFrame(self.main_data[current_symbol],
                           columns=['timestamp', 'open', 'high', 'low', 'close', 'volume', 'close_time',

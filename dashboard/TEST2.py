@@ -97,8 +97,15 @@
 
 
 
-<<<<<<  e  >>>>>> :
+"""<<<<<<  e  >>>>>> :
  {'e': 'ORDER_TRADE_UPDATE', 'T': 1625047065159, 'E': 1625047065165, 'o': {'s': 'XRPUSDT', 'c': 'web_KQFVXIJXTeG6I9RUDmTo', 'S': 'SELL', 'o': 'MARKET', 'f': 'GTC', 'q': '22.2', 'p': '0', 'ap': '0.67160', 'sp': '0.6720', 'x': 'TRADE', 'X': 'FILLED', 'i': 15384883176, 'l': '13.5', 'z': '22.2', 'L': '0.6716', 'n': '0.00362664', 'N': 'USDT', 'T': 1625047065159, 't': 515356386, 'b': '0', 'a': '0', 'm': False, 'R': True, 'wt': 'MARK_PRICE', 'ot': 'STOP_MARKET', 'ps': 'BOTH', 'cp': True, 'rp': '-0.02970000', 'pP': False, 'si': 0, 'ss': 0}}
 
 <<<<<<  e  >>>>>> :
  {'e': 'ORDER_TRADE_UPDATE', 'T': 1625047065159, 'E': 1625047065165, 'o': {'s': 'XRPUSDT', 'c': 'web_ihuNZxkJQ2a1yMFrYQDI', 'S': 'SELL', 'o': 'TAKE_PROFIT_MARKET', 'f': 'GTE_GTC', 'q': '0', 'p': '0', 'ap': '0', 'sp': '0.6760', 'x': 'EXPIRED', 'X': 'EXPIRED', 'i': 15384883175, 'l': '0', 'z': '0', 'L': '0', 'T': 1625047065159, 't': 0, 'b': '0', 'a': '0', 'm': False, 'R': True, 'wt': 'MARK_PRICE', 'ot': 'TAKE_PROFIT_MARKET', 'ps': 'BOTH', 'cp': True, 'rp': '0', 'pP': False, 'si': 0, 'ss': 0}}
+"""
+from datetime import datetime
+d = 1625046806986
+
+f = datetime.fromtimestamp(d/1000).strftime('%d.%m.%Y %H:%M')
+
+print(f)
