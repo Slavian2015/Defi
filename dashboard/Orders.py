@@ -1,7 +1,15 @@
 from binance.exceptions import BinanceAPIException, BinanceOrderException
 import dbrools
 import logging
+from binance.client import Client
 
+new_keys = dbrools.my_keys.find_one()
+
+telega_api_key = new_keys['telega']['key']
+telega_api_secret = new_keys['telega']['secret']
+api_key = new_keys['bin']['key']
+api_secret = new_keys['bin']['secret']
+bclient = Client(api_key=api_key, api_secret=api_secret)
 
 class CustomFormatter(logging.Formatter):
     """Logging Formatter to add colors and count warning / errors"""
@@ -69,7 +77,7 @@ def my_order(client=None, symbol=None, side=None, amount=None, price=None):
     return my_reponse
 
 
-def my_order_future(client=None, symbol=None, side=None, amount=None):
+def my_order_future(client=bclient, symbol=None, side=None, amount=None):
     my_reponse = {"error": False, "result": None}
     try:
         if side == 1:
@@ -94,7 +102,7 @@ def my_order_future(client=None, symbol=None, side=None, amount=None):
     return my_reponse
 
 
-def tp_future(client=None, symbol=None, side=None, price=None, amount=None):
+def tp_future(client=bclient, symbol=None, side=None, price=None, amount=None):
     my_reponse = {"error": False, "result": None}
     try:
         if side == 1:
@@ -121,7 +129,7 @@ def tp_future(client=None, symbol=None, side=None, price=None, amount=None):
     return my_reponse
 
 
-def sl_future(client=None, symbol=None, side=None, price=None, amount=None):
+def sl_future(client=bclient, symbol=None, side=None, price=None, amount=None):
     my_reponse = {"error": False, "result": None}
     try:
         if side == 1:
