@@ -11,6 +11,7 @@ my_bal = db['Balance']
 my_history = db['History']
 
 my_history_new = db['HistoryNew']
+my_future_history = db["HistoryF"]
 
 my_active = db['Active']
 
@@ -111,6 +112,11 @@ def insert_history(data=None):
 
 def insert_history_new(data=None):
     insert_document(my_history_new, data)
+    return
+
+
+def insert_new_history(data=None):
+    insert_document(my_future_history, data)
     return
 
 

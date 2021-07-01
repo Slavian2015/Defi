@@ -11,6 +11,7 @@ api_key = new_keys['bin']['key']
 api_secret = new_keys['bin']['secret']
 bclient = Client(api_key=api_key, api_secret=api_secret)
 
+
 class CustomFormatter(logging.Formatter):
     """Logging Formatter to add colors and count warning / errors"""
 
@@ -209,3 +210,10 @@ def my_balance(client=None):
     my_reponse["error"] = True
     my_reponse["result"] = error
     return my_reponse
+
+
+def cancel_my_order(client=bclient, symbol=None, my_id=None):
+    if symbol and my_id:
+       client.futures_cancel_order(symbol=symbol, origClientOrderId=my_id)
+
+    return
