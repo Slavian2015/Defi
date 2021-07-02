@@ -2,7 +2,7 @@
 import base64
 import os
 import sys
-
+from datetime import datetime
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
@@ -310,32 +310,36 @@ def column_right():
 
 
 def new_trade_history():
+    maintable, itemtable = my_new_trade_history()
+
+    minicards = item_card_history(itemtable)
+
     card = html.Div(
 
-        dbc.Row(
-        [
-            dbc.Col(dbc.Card(history_main_card(), color="dark", style={"margin": "0",
-                   "padding": "0"}, inverse=True)),
-        ],
+        [dbc.Row(
+            [
+                dbc.Col(dbc.Card(history_main_card(maintable), color="dark", style={"margin": "0",
+                                                                                    "padding": "0"}, inverse=True)),
+            ],
             style={"margin": "0",
                    "padding": "0"},
         ),
-            style={"margin": "0",
-                   "padding": "0"}
-
-
-        # dbc.Row(
-        #     [
-        #         dbc.Col(dbc.Card(card_content, color="light")),
-        #         dbc.Col(dbc.Card(card_content, color="dark", inverse=True)),
-        #     ]
-        # )
+            dbc.Row(minicards,
+                    style={"margin": "0",
+                           "padding": "0",
+                           # "maxWidth": "100%",
+                           "display": "block ruby",
+                           "overflowX": "scroll"
+                           },
+                    ),
+        ],
+        style={"margin": "0",
+               "padding": "0"}
     )
     return card
 
 
-def history_main_card():
-
+def history_main_card(maintable):
     table_header = [
         html.Thead(html.Tr(
             [
@@ -348,22 +352,22 @@ def history_main_card():
                 html.Th("PNL"),
             ],
             style={"font-size": "10px", "textAlign": "center",
-                                   "margin": "0",
-                                   "padding": "0"}),
+                   "margin": "0",
+                   "padding": "0"}),
             style={"margin": "0",
                    "padding": "0"}
         )
 
     ]
 
-    table_body = [html.Tbody(my_new_trade_history(),
-                            style={"margin": "0",
+    table_body = [html.Tbody(maintable,
+                             style={"margin": "0",
                                     "padding": "0"},
                              id="main_trade_table")]
 
     table = dbc.Table(table_header + table_body,
-                      style={"width": "100%", 'border-collapse': 'collapse',"margin": "0",
-                                    "padding": "0"},
+                      style={"width": "100%", 'border-collapse': 'collapse', "margin": "0",
+                             "padding": "0"},
                       className="no-scrollbars",
                       bordered=True,
                       # dark=True,
@@ -372,17 +376,106 @@ def history_main_card():
     card_content = [
         dbc.CardBody(
             [table],
-                            style={"margin": "0",
-                                    "padding": "0",
-                                   "min-width": "100%",}
+            style={"margin": "0",
+                   "padding": "0",
+                   "min-width": "100%", }
         ),
     ]
 
     return card_content
 
 
-def item_card_history():
-    return
+def item_card_history(data):
+    minicards = []
+
+    for k, v in data.items():
+        card = dbc.Col(dbc.Card(pip_item_card(v, k),
+                                color="dark",
+                                style={"margin": "5px",
+                                       "padding": "0",
+                                       "height": "60vh",
+                                       "minHeight": "60vh",
+                                       "maxHeight": "60vh"}),
+
+                       width=5,
+                       sm=11,
+                       lg=5,
+                       xs=11,
+                       className="no-scrollbars",
+                       )
+        minicards.append(card)
+    return minicards
+
+
+def pip_item_card(items, name):
+    coins = []
+    p_deals = []
+    brutto = []
+
+    coin_deals = []
+
+    for i in items:
+        coins.append(i['symbol'])
+        if i['result'] == 2:
+            p_deals.append(i['profit'])
+            new_color = "green"
+        else:
+            new_color = "red"
+        brutto.append(i['profit'])
+
+        mini_child = html.Tr([
+            html.Th([html.P(datetime.fromtimestamp(int(i['date'])/1000).strftime('%d.%m.%Y %H:%M'), style={"min-width": "50px"})],
+                    style={"padding": "0", "margin": "0"}),
+            html.Th([html.P(i['side'], style={"min-width": "40px"})],
+                    style={"padding": "0", "margin": "0"}),
+            html.Th([html.P(i['priceIn'], style={"min-width": "40px"})],
+                    style={"padding": "0", "margin": "0"}),
+            html.Th([html.P(i['priceOut'], style={"min-width": "40px"})],
+                    style={"padding": "0", "margin": "0"}),
+            html.Th([html.P(round(float(i['profit']), 2), style={"min-width": "40px"})],
+                    style={"padding": "0", "margin": "0"}),
+        ], style={"background-color": new_color})
+
+        coin_deals.append(mini_child)
+
+    ratio = round(len(p_deals) / len(brutto) * 100, 2)
+    commissions = round(len(brutto) * 2 * 0.33, 2)
+    netto = round(sum(brutto) - commissions, 2)
+    pnl = round(netto / (60 * len(set(coins))) * 100, 2)
+
+    child = html.Tr([
+        html.Th([html.P(len(p_deals), style={"min-width": "40px"})],
+                style={"padding": "0", "margin": "0"}),
+        html.Th([html.P(len(brutto), style={"min-width": "40px"})],
+                style={"padding": "0", "margin": "0"}),
+        html.Th([dbc.Badge(f"{ratio}%", style={"min-width": "50px"}, color="warning")],
+                style={"padding": "0", "margin": "0"}),
+        html.Th([html.P(netto, style={"min-width": "40px"})],
+                style={"padding": "0", "margin": "0"}),
+        html.Th([dbc.Badge(pnl, style={"min-width": "50px"}, color="success")],
+                style={"padding": "0", "margin": "0"})
+    ])
+
+    table = dbc.Table([html.Tbody(coin_deals)],
+                      style={"width": "100%", 'border-collapse': 'collapse'},
+                      className="no-scrollbars",
+                      bordered=True,
+                      hover=True,
+                      # dark=True,
+                      responsive=True,
+                      striped=True)
+
+    newdata = [
+        dbc.CardHeader(name, style={"textAlign": "center", "padding": "0", "margin": "0", "display": "block"}),
+        dbc.CardBody(table, style={"textAlign": "center", "padding": "0", "margin": "0", "display": "block",
+                                   "height": "45vh",
+                                   "minHeight": "45vh",
+                                   "maxHeight": "45vh",
+                                   "overflowY": "scroll"}),
+        dbc.CardFooter(child, style={"textAlign": "center", "padding": "0", "margin": "0", "display": "table"}),
+    ]
+
+    return newdata
 
 
 def trade_history():
@@ -477,49 +570,165 @@ def my_trade_history():
 
 
 def my_new_trade_history():
-    my_list = []
+    my_list = {}
 
-    # items = dbrools.get_history_data()
+    items = dbrools.get_new_history_data()
 
-    items = []
+    # items = []
     if not items:
         items = [
             {
-                       "symbol": "BTC",
-                       "side": "LONG",
-                       "priceIn": 100,
-                       "priceOut": 102,
-                       "result": 2,
-                       "profit": 2,
-                       "date": f"1625047065159"
-                   },
+                "symbol": "BTC",
+                "side": "LONG",
+                "priceIn": 100,
+                "priceOut": 102,
+                "result": 2,
+                "profit": 2,
+                "date": f"1625047065159"
+            },{
+                "symbol": "BTC",
+                "side": "LONG",
+                "priceIn": 100,
+                "priceOut": 102,
+                "result": 2,
+                "profit": 2,
+                "date": f"1625047065159"
+            },{
+                "symbol": "BTC",
+                "side": "LONG",
+                "priceIn": 100,
+                "priceOut": 102,
+                "result": 2,
+                "profit": 2,
+                "date": f"1625047065159"
+            },{
+                "symbol": "BTC",
+                "side": "LONG",
+                "priceIn": 100,
+                "priceOut": 102,
+                "result": 2,
+                "profit": 2,
+                "date": f"1625047065159"
+            },{
+                "symbol": "BTC",
+                "side": "LONG",
+                "priceIn": 100,
+                "priceOut": 102,
+                "result": 2,
+                "profit": 2,
+                "date": f"1625047065159"
+            },{
+                "symbol": "BTC",
+                "side": "LONG",
+                "priceIn": 100,
+                "priceOut": 102,
+                "result": 2,
+                "profit": 2,
+                "date": f"1625047065159"
+            },{
+                "symbol": "BTC",
+                "side": "LONG",
+                "priceIn": 100,
+                "priceOut": 102,
+                "result": 2,
+                "profit": 2,
+                "date": f"1625047065159"
+            },{
+                "symbol": "BTC",
+                "side": "LONG",
+                "priceIn": 100,
+                "priceOut": 102,
+                "result": 2,
+                "profit": 2,
+                "date": f"1625047065159"
+            },{
+                "symbol": "BTC",
+                "side": "LONG",
+                "priceIn": 100,
+                "priceOut": 102,
+                "result": 2,
+                "profit": 2,
+                "date": f"1625047065159"
+            },{
+                "symbol": "BTC",
+                "side": "LONG",
+                "priceIn": 100,
+                "priceOut": 102,
+                "result": 2,
+                "profit": 2,
+                "date": f"1625047065159"
+            },{
+                "symbol": "BTC",
+                "side": "LONG",
+                "priceIn": 100,
+                "priceOut": 102,
+                "result": 2,
+                "profit": 2,
+                "date": f"1625047065159"
+            },
             {
-                       "symbol": "BTC",
-                       "side": "LONG",
-                       "priceIn": 102,
-                       "priceOut": 103,
-                       "result": 2,
-                       "profit": 1,
-                       "date": f"1625047065159"
-                   },
+                "symbol": "BTC",
+                "side": "LONG",
+                "priceIn": 102,
+                "priceOut": 103,
+                "result": 2,
+                "profit": 1,
+                "date": f"1625047065159"
+            },
             {
-                       "symbol": "BTC",
-                       "side": "LONG",
-                       "priceIn": 105,
-                       "priceOut": 104,
-                       "result": 1,
-                       "profit": -1,
-                       "date": f"1625047065159"
-                   },
+                "symbol": "BTC",
+                "side": "LONG",
+                "priceIn": 102,
+                "priceOut": 103,
+                "result": 2,
+                "profit": 1,
+                "date": f"1625047065159"
+            },
             {
-                       "symbol": "TRX",
-                       "side": "LONG",
-                       "priceIn": 100,
-                       "priceOut": 100,
-                       "result": 2,
-                       "profit": 0,
-                       "date": f"1625047065159"
-                   },
+                "symbol": "BTC",
+                "side": "LONG",
+                "priceIn": 102,
+                "priceOut": 103,
+                "result": 2,
+                "profit": 1,
+                "date": f"1625047065159"
+            },
+            {
+                "symbol": "BTC",
+                "side": "LONG",
+                "priceIn": 102,
+                "priceOut": 103,
+                "result": 2,
+                "profit": 1,
+                "date": f"1625047065159"
+            },
+            {
+                "symbol": "BTC",
+                "side": "LONG",
+                "priceIn": 105,
+                "priceOut": 104,
+                "result": 1,
+                "profit": -1,
+                "date": f"1625047065159"
+            },
+            {
+                "symbol": "TRX",
+                "side": "LONG",
+                "priceIn": 100,
+                "priceOut": 100,
+                "result": 2,
+                "profit": 0,
+                "date": f"1625047065159"
+            },
+            {
+                "symbol": "SOL",
+                "side": "LONG",
+                "priceIn": 100,
+                "priceOut": 105,
+                "result": 2,
+                "profit": 5,
+                "date": f"1625047065159"
+            },
         ]
 
     coins = []
@@ -532,26 +741,32 @@ def my_new_trade_history():
             p_deals.append(i['profit'])
         brutto.append(i['profit'])
 
+        if i['symbol'] in my_list.keys():
+            my_list[i['symbol']].append(i)
+        else:
+            my_list[i['symbol']] = []
+            my_list[i['symbol']].append(i)
+
     ratio = round(len(p_deals) / len(brutto) * 100, 2)
     commissions = round(len(brutto) * 2 * 0.33, 2)
     netto = round(sum(brutto) - commissions, 2)
-    pnl = round(netto / (60*len(set(coins))) * 100, 2)
+    pnl = round(netto / (60 * len(set(coins))) * 100, 2)
 
     child = html.Tr([
-            html.Th([html.P(len(set(coins)), style={"min-width": "30px"})],
-                    style={"padding": "0", "margin": "0"}),
-            html.Th([html.P(len(p_deals), style={"min-width": "40px"})],
-                    style={"padding": "0", "margin": "0"}),
-            html.Th([html.P(len(brutto), style={"min-width": "40px"})],
-                    style={"padding": "0", "margin": "0"}),
-            html.Th([html.P(ratio, style={"min-width": "50px"})],
-                    style={"padding": "0", "margin": "0"}),
-            html.Th([html.P(commissions, style={"min-width": "40px"})],
-                    style={"padding": "0", "margin": "0"}),
-            html.Th([html.P(netto, style={"min-width": "40px"})],
-                    style={"padding": "0", "margin": "0"}),
-            html.Th([dbc.Badge(pnl, style={"min-width": "50px"}, color="success")],
-                    style={"padding": "0", "margin": "0"})
+        html.Th([html.P(len(set(coins)), style={"min-width": "30px"})],
+                style={"padding": "0", "margin": "0"}),
+        html.Th([html.P(len(p_deals), style={"min-width": "40px"})],
+                style={"padding": "0", "margin": "0"}),
+        html.Th([html.P(len(brutto), style={"min-width": "40px"})],
+                style={"padding": "0", "margin": "0"}),
+        html.Th([html.P(f"{ratio}%", style={"min-width": "50px"})],
+                style={"padding": "0", "margin": "0"}),
+        html.Th([html.P(commissions, style={"min-width": "40px"})],
+                style={"padding": "0", "margin": "0"}),
+        html.Th([html.P(netto, style={"min-width": "40px"})],
+                style={"padding": "0", "margin": "0"}),
+        html.Th([dbc.Badge(pnl, style={"min-width": "50px"}, color="success")],
+                style={"padding": "0", "margin": "0"})
     ])
 
-    return child
+    return child, my_list

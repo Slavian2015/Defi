@@ -10,7 +10,7 @@ from unicorn_binance_websocket_api.unicorn_binance_websocket_api_manager import 
 import subprocess
 
 sys.path.insert(0, r'/usr/local/WB/dashboard')
-# import Settings
+import json
 import dbrools
 
 main_path_data = os.path.expanduser('/usr/local/WB/data/')
@@ -42,7 +42,19 @@ n_rools = {"BTCUSDT": {"price": 2, "decimals": 3},
 # markets = {'xrpusdt', 'ltcusdt', 'ethusdt', 'trxusdt', 'eosusdt', 'bnbusdt',
 #            'linkusdt', 'filusdt', 'yfiusdt', 'dotusdt', 'sxpusdt', 'uniusdt',
 #            'adausdt', 'aaveusdt'}
-markets = {'trxusdt'}
+
+main_path_settings = f'/usr/local/WB/dashboard/data/settings.json'
+
+a_file1 = open(main_path_settings, "r")
+rools = json.load(a_file1)
+a_file1.close()
+active_list = []
+
+for k, v in rools.items():
+    if v:
+        active_list.append(k.lower())
+
+markets = set(active_list)
 
 symbols = ["XRP", "BTC", "ETH",
            "TRX", "EOS", "BNB",

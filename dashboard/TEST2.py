@@ -111,21 +111,23 @@
 # print(f)
 
 import json
-new_data = {}
+# new_data = {}
+#
+#
+# symbols = ["XRP", "BTC", "ETH",
+#            "TRX", "EOS", "BNB",
+#            "LINK", "FIL", "YFI",
+#            "DOT", "SXP", "UNI",
+#            "LTC", "ADA", "AAVE"]
+#
+# for i in symbols:
+#     new_data[i+'USDT'] = False
+#
+# print(new_data)
 
+new_data = {"active": False}
 
-symbols = ["XRP", "BTC", "ETH",
-           "TRX", "EOS", "BNB",
-           "LINK", "FIL", "YFI",
-           "DOT", "SXP", "UNI",
-           "LTC", "ADA", "AAVE"]
-
-for i in symbols:
-    new_data[i+'USDT'] = False
-
-print(new_data)
-
-main_path = f'/usr/local/WB/dashboard/data/settings.json'
+main_path = f'/usr/local/WB/dashboard/data/active.json'
 
 with open(main_path, 'w', encoding='utf-8') as outfile:
     json.dump(new_data, outfile, ensure_ascii=False, indent=4)

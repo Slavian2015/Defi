@@ -171,5 +171,45 @@ def toggle_modal(n1, symbol, old_btn_color):
             raise PreventUpdate
 
 
+@dash_app.callback(
+    [Output("start_btn", 'color'),
+     Output("start_btn", 'value')],
+    [Input("start_btn", 'n_clicks')],
+    [State("start_btn", 'value')]
+)
+def toggle_modal_main(n1, old_btn):
+    ctx = dash.callback_context
+    button_id = ctx.triggered[0]['prop_id'].split('.')
+
+    if button_id[0] == 'start_btn':
+        if old_btn == "START":
+            pid = subprocess.Popen(["python", "/usr/local/WB/dashboard/my_class/combo.py"]).pid
+
+            main_path_settings = f'/usr/local/WB/dashboard/data/active.json'
+
+            a_file1 = open(main_path_settings, "r")
+            rools = json.load(a_file1)
+            a_file1.close()
+            rools['active'] = pid
+            f = open(main_path_settings, "w")
+            json.dump(rools, f)
+            f.close()
+            return ["STOP", "danger"]
+        else:
+            main_path_settings = f'/usr/local/WB/dashboard/data/active.json'
+            a_file1 = open(main_path_settings, "r")
+            rools = json.load(a_file1)
+            a_file1.close()
+            pidid = rools['active']
+            rools['active'] = False
+            f = open(main_path_settings, "w")
+            json.dump(rools, f)
+            f.close()
+            os.kill(int(pidid), signal.SIGKILL)
+            return ["START", "success"]
+    else:
+        raise PreventUpdate
+
+
 if __name__ == '__main__':
     dash_app.run_server(host="0.0.0.0", port=5033, debug=False)

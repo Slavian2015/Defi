@@ -105,6 +105,14 @@ def get_history_data():
     return d
 
 
+def get_new_history_data():
+    d = []
+
+    for i in my_future_history.find():
+        d.append(i)
+    return d
+
+
 def insert_history(data=None):
     insert_document(my_history, data)
     return
