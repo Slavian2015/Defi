@@ -98,7 +98,7 @@ def trigger_balance(n1, api_key, api_secret):
                    [Input('save_api_bin', 'n_clicks')],
                    [State('example-api-key_bin', 'value'),
                     State('example-api-secret_bin', 'value')])
-def trigger_balance(n1, api_key, api_secret):
+def trigger_balance2(n1, api_key, api_secret):
     ctx = dash.callback_context
     button_id = ctx.triggered[0]['prop_id'].split('.')
     if button_id[0] == 'save_api_bin':
@@ -113,7 +113,7 @@ def trigger_balance(n1, api_key, api_secret):
 
 # ###############################    Refresh History   ##################################
 @dash_app.callback(
-    [Output('new_trade_history', 'children')],
+    Output('new_trade_history', 'children'),
     [Input("interval_price", 'n_intervals')])
 def trigger_by_modify(n1):
     ctx = dash.callback_context
@@ -121,7 +121,7 @@ def trigger_by_modify(n1):
 
     if button_id[0] == 'interval_price':
         card = new_layouts.new_trade_history()
-        return [card]
+        return card
     else:
         raise PreventUpdate
 
