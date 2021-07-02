@@ -139,11 +139,11 @@ class SsrmBot:
             self.my_price = float(my_orders['avgPrice'])
 
             if self.order == 1:
-                self.my_sl = self.my_price / 1.009
-                self.my_tp = self.my_price * 1.022
+                self.my_sl = self.my_price / 1.01
+                self.my_tp = self.my_price * 1.021
             else:
-                self.my_sl = self.my_price * 1.009
-                self.my_tp = self.my_price / 1.022
+                self.my_sl = self.my_price * 1.01
+                self.my_tp = self.my_price / 1.021
 
             data = {
                 "symbol": f"{self.symbol} ({self.new_side})",
@@ -231,44 +231,45 @@ class SsrmBot:
         self.order_id = False
 
     def algorithm(self):
-        if not self.order:
-            df = pd.DataFrame(self.main_data,
-                              columns=['timestamp', 'open', 'high', 'low', 'close', 'volume', 'close_time',
-                                       'quote_av', 'trades', 'tb_base_av', 'tb_quote_av', 'ignore'])
-            df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
-            df.set_index('timestamp', inplace=True)
+        df = pd.DataFrame(self.main_data,
+                          columns=['timestamp', 'open', 'high', 'low', 'close', 'volume', 'close_time',
+                                   'quote_av', 'trades', 'tb_base_av', 'tb_quote_av', 'ignore'])
+        df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
+        df.set_index('timestamp', inplace=True)
 
-            df['close'] = pd.to_numeric(df['close'])
-            df['close'] = pd.to_numeric(df['close'])
-            df["high"] = pd.to_numeric(df["high"])
-            df["low"] = pd.to_numeric(df["low"])
+        df['close'] = pd.to_numeric(df['close'])
+        df['close'] = pd.to_numeric(df['close'])
+        df["high"] = pd.to_numeric(df["high"])
+        df["low"] = pd.to_numeric(df["low"])
 
-            df['rsi'] = ta.RSI(df['close'].values, timeperiod=12)
-            df["slowk"], df["slowd"] = ta.STOCH(df['high'].values, df['low'].values, df['close'].values, 14, 3, 0, 3, 0)
-            df["macd"], df["line"], df["hist"] = ta.MACD(df['close'], fastperiod=12, slowperiod=26, signalperiod=9)
+        df['rsi'] = ta.RSI(df['close'].values, timeperiod=12)
+        df["slowk"], df["slowd"] = ta.STOCH(df['high'].values, df['low'].values, df['close'].values, 14, 3, 0, 3, 0)
+        df["macd"], df["line"], df["hist"] = ta.MACD(df['close'], fastperiod=12, slowperiod=26, signalperiod=9)
 
-            if df["slowk"].iloc[-1] <= 20 and df["slowd"].iloc[-1] <= 20:
-                self.my_Stoch = 1
-            elif df["slowk"].iloc[-1] >= 80 and df["slowd"].iloc[-1] >= 80:
-                self.my_Stoch = 2
+        if df["slowk"].iloc[-1] <= 20 and df["slowd"].iloc[-1] <= 20:
+            self.my_Stoch = 1
+        elif df["slowk"].iloc[-1] >= 80 and df["slowd"].iloc[-1] >= 80:
+            self.my_Stoch = 2
 
-            if self.my_Stoch == 1 and df["slowk"].iloc[-1] >= 80:
-                self.my_Stoch = False
-            elif self.my_Stoch == 2 and df["slowk"].iloc[-1] <= 20:
-                self.my_Stoch = False
+        if self.my_Stoch == 1 and df["slowk"].iloc[-1] >= 80:
+            self.my_Stoch = False
+        elif self.my_Stoch == 2 and df["slowk"].iloc[-1] <= 20:
+            self.my_Stoch = False
 
-            if df["rsi"].iloc[-1] >= 50:
-                self.my_RSI = 1
-            else:
-                self.my_RSI = 2
+        if df["rsi"].iloc[-1] >= 50:
+            self.my_RSI = 1
+        else:
+            self.my_RSI = 2
 
-            if self.my_Stoch == 1 and self.my_RSI == 1:
-                if df["hist"].iloc[-1] > 0 > df["hist"].iloc[-2] and self.rsi_signal > 70:
-                    self.main_direction = self.my_RSI
+        if self.my_Stoch == 1 and self.my_RSI == 1:
+            if df["hist"].iloc[-1] > 0 > df["hist"].iloc[-2] and self.rsi_signal > 70:
+                self.main_direction = self.my_RSI
+                if not self.order:
                     self.place_new_order()
-            elif self.my_Stoch == 2 and self.my_RSI == 2:
-                if df["hist"].iloc[-1] < 0 < df["hist"].iloc[-2] and self.rsi_signal < 30:
-                    self.main_direction = self.my_RSI
+        elif self.my_Stoch == 2 and self.my_RSI == 2:
+            if df["hist"].iloc[-1] < 0 < df["hist"].iloc[-2] and self.rsi_signal < 30:
+                self.main_direction = self.my_RSI
+                if not self.order:
                     self.place_new_order()
 
     def algorithm_rsi(self):

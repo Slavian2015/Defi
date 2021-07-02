@@ -56,30 +56,6 @@ def display_page(pathname):
         return "404"
 
 
-# ###############################    REGIM BUTTONS    ##################################
-@dash_app.callback([Output('hidden_port', 'children')],
-                   [Input('kline_on', 'n_clicks'),
-                    Input('kline_off', 'n_clicks'),
-                    ])
-def trigger_by_modify(n1, n2):
-    ctx = dash.callback_context
-    button_id = ctx.triggered[0]['prop_id'].split('.')
-    if button_id[0] == 'kline_on' and n1 > 0:
-        with subprocess.Popen(["python", '/usr/local/WB/dashboard/PARSER_kline.py'], stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE) as proc1, \
-                open('/usr/local/WB/data/my_logs/kline_log.txt', 'w') as file1:
-            t1 = threading.Thread(target=output_reader, args=(proc1, file1))
-            t1.start()
-            t1.join()
-        return ["kline_on"]
-    elif button_id[0] == 'kline_off':
-        script = "/usr/local/WB/dashboard/PARSER_kline.py"
-        subprocess.check_call(["pkill", "-9", "-f", script])
-        return ["kline_off"]
-    else:
-        raise PreventUpdate
-
-
 # ###############################    REFRESH BALANCE    ##################################
 @dash_app.callback([Output('usdt_balance', 'children')],
                    [Input('balance_btn', 'n_clicks')])
@@ -137,31 +113,27 @@ def trigger_balance(n1, api_key, api_secret):
 
 # ###############################    Refresh History   ##################################
 @dash_app.callback(
-    [Output('my_wallet_balance', 'children'),
-     Output('new_trade_history', 'children')],
+    [Output('new_trade_history', 'children')],
     [Input("interval_price", 'n_intervals')])
 def trigger_by_modify(n1):
     ctx = dash.callback_context
     button_id = ctx.triggered[0]['prop_id'].split('.')
 
     if button_id[0] == 'interval_price':
-        card = layouts.my_wallet()
-        card2 = layouts.trade_history()
-        return [card, card2]
+        card = new_layouts.new_trade_history()
+        return [card]
     else:
         raise PreventUpdate
 
 
 # ##############################   Orders   ##################################
 @dash_app.callback(
-    [Output({'type': 'symbol_button', 'index': MATCH}, 'children'),
-     Output({'type': 'symbol_button', 'index': MATCH}, 'color')],
+    [Output({'type': 'symbol_button', 'index': MATCH}, 'color')],
     [Input({'type': 'symbol_button', 'index': MATCH}, 'n_clicks')],
-    [State({'type': 'symbol_amount', 'index': MATCH}, 'value'),
-     State({'type': 'symbol_name', 'index': MATCH}, 'children'),
-     State({'type': 'symbol_button', 'index': MATCH}, 'children')]
+    [State({'type': 'symbol_name', 'index': MATCH}, 'children'),
+     State({'type': 'symbol_button', 'index': MATCH}, 'color')]
 )
-def toggle_modal(n1, amount, symbol, old_btn):
+def toggle_modal(n1, symbol, old_btn_color):
     trigger = dash.callback_context.triggered[0]
     button = trigger["prop_id"].split(".")[0]
 
@@ -171,15 +143,30 @@ def toggle_modal(n1, amount, symbol, old_btn):
         if type(button) is str:
             button = json.loads(button.replace("'", "\""))
         if button["type"] == 'symbol_button':
-            if old_btn == "START":
-                pid = subprocess.Popen(["python", "/usr/local/WB/dashboard/my_class/ssrm_future.py", f'--symbol={symbol}', f'--amount={amount}']).pid
-                dbrools.update_pid(symbol, amount, pid)
-                return ["STOP", "danger"]
+            if old_btn_color == "success":
+
+                main_path_settings = f'/usr/local/WB/dashboard/data/settings.json'
+
+                a_file1 = open(main_path_settings, "r")
+                rools = json.load(a_file1)
+                a_file1.close()
+                rools[symbol+"USDT"] = True
+                f = open(main_path_settings, "w")
+                json.dump(rools, f)
+                f.close()
+
+                return ["danger"]
             else:
-                pidid = dbrools.find_pid(symbol)
-                dbrools.update_pid(symbol, 0, 0)
-                os.kill(int(pidid), signal.SIGKILL)
-                return ["START", "success"]
+                main_path_settings = f'/usr/local/WB/dashboard/data/settings.json'
+
+                a_file1 = open(main_path_settings, "r")
+                rools = json.load(a_file1)
+                a_file1.close()
+                rools[symbol+"USDT"] = False
+                f = open(main_path_settings, "w")
+                json.dump(rools, f)
+                f.close()
+                return ["success"]
         else:
             raise PreventUpdate
 

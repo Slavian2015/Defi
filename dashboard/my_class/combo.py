@@ -5,12 +5,13 @@ import traceback
 from datetime import datetime
 import warnings
 import talib as ta
+import logging
 from unicorn_binance_websocket_api.unicorn_binance_websocket_api_manager import BinanceWebSocketApiManager
 import subprocess
-sys.path.insert(0, r'/usr/local/WB/dashboard')
-import Settings
 
-# import dbrools
+sys.path.insert(0, r'/usr/local/WB/dashboard')
+# import Settings
+import dbrools
 
 main_path_data = os.path.expanduser('/usr/local/WB/data/')
 warnings.filterwarnings("ignore")
@@ -41,7 +42,7 @@ n_rools = {"BTCUSDT": {"price": 2, "decimals": 3},
 # markets = {'xrpusdt', 'ltcusdt', 'ethusdt', 'trxusdt', 'eosusdt', 'bnbusdt',
 #            'linkusdt', 'filusdt', 'yfiusdt', 'dotusdt', 'sxpusdt', 'uniusdt',
 #            'adausdt', 'aaveusdt'}
-markets = {'xrpusdt'}
+markets = {'trxusdt'}
 
 symbols = ["XRP", "BTC", "ETH",
            "TRX", "EOS", "BNB",
@@ -81,32 +82,13 @@ class SsrmBot:
 
         self.main_data = data_klines
         self.main_data_hour = data_klines
-        # self.open_orders = data_false
         self.rsi_signal = data_false
         self.main_BD = data_false
-
-        self.trade = 0
-        self.my_price = 0
-
-        self.status = False
-        # self.min_amount = min_amount * 50
-        self.amount = 0
-
-        self.main_direction = None
-        self.new_side = None
-
-        self.order = False
-        self.order_id = False
-
-        self.order_id_tp = False
-        self.order_id_sl = False
-
-        self.my_tp = 0
-        self.my_sl = 0
-
         self.my_Stoch = data_false
 
         self.binance_websocket_api_manager = None
+        self.binance_websocket_api_manager_future = None
+        self.status = False
 
     def new_data_1_min(self):
         for i in markets:
@@ -132,7 +114,8 @@ class SsrmBot:
     def place_new_order(self, main_direction, newsymbol, current_price):
 
         amount = round((self.min_amount / float(current_price)), n_rools[newsymbol]["decimals"])
-        self.main_BD[newsymbol] = {"direction": main_direction, "ap": False, "amount": amount, "date": False, "tp": False, "sl": False}
+        self.main_BD[newsymbol] = {"direction": main_direction, "ap": False, "amount": amount, "date": False,
+                                   "tp": False, "sl": False}
 
         pid = subprocess.Popen(["python",
                                 "/usr/local/WB/dashboard/combo_new_order.py",
@@ -141,63 +124,11 @@ class SsrmBot:
                                 f'--decimals={n_rools[newsymbol]["decimals"]}',
                                 f'--main_direction={main_direction}'
                                 ]).pid
+
+        bot_message = f"Added {newsymbol} ({'LONG' if main_direction == 1 else 'SHORT'})"
+        bot_sendtext(bot_message)
+        print("\n", bot_message)
         return
-        #
-        #
-        # # price = str(round(self.my_sl, n_rools[self.symbol.upper()]['price'])),
-        # # amount = round(self.amount, n_rools[self.symbol.upper()]["decimals"]))
-        #
-        #
-        #
-        # if self.main_direction == 1:
-        #     self.new_side = "LONG"
-        # else:
-        #     self.new_side = "SHORT"
-        #
-        # self.order = self.main_direction
-        #
-        # reponse = Orders.my_order_future(client=self.bclient,
-        #                                  symbol=f"{self.symbol.upper()}USDT",
-        #                                  side=self.main_direction,
-        #                                  amount=round(self.amount, n_rools[self.symbol.upper()]["decimals"]))
-        #
-        # if reponse['error']:
-        #     self.bot_ping = False
-        #     logging.info(f"New order Error:\n {reponse}")
-        #     bot_sendtext(f"New order Error:\n {reponse}")
-        # else:
-        #     self.order_id = reponse['result']['orderId']
-        #     logging.info(f"New order:\n {reponse}")
-        #     dbrools.insert_history_new(data=reponse)
-        #
-        #     time.sleep(1)
-        #
-        #     my_orders = self.bclient.futures_get_order(symbol=f"{self.symbol.upper()}USDT", orderId=self.order_id)
-        #     self.my_price = float(my_orders['avgPrice'])
-        #
-        #     if self.order == 1:
-        #         self.my_sl = self.my_price / 1.009
-        #         self.my_tp = self.my_price * 1.022
-        #     else:
-        #         self.my_sl = self.my_price * 1.009
-        #         self.my_tp = self.my_price / 1.022
-        #
-        #     data = {
-        #         "symbol": f"{self.symbol} ({self.new_side})",
-        #         "side": f"{self.new_side}",
-        #         "amount": round(self.amount, n_rools[self.symbol.upper()]["decimals"]),
-        #         "price": float(round(self.my_price, n_rools[self.symbol.upper()]['price'])),
-        #         "direct": 'BUY',
-        #         "result": 0,
-        #         "date": f"{datetime.now().strftime('%d.%m.%Y')}"
-        #     }
-        #     dbrools.insert_history(data=data)
-        #
-        #     bot_message = f"Added {self.symbol} ({self.new_side}), \n{round(self.amount, n_rools[self.symbol.upper()]['decimals'])}, \n{round(self.my_price, n_rools[self.symbol.upper()]['price'])},\n SL {round(self.my_sl, n_rools[self.symbol.upper()]['price'])} / TP {round(self.my_tp, n_rools[self.symbol.upper()]['price'])}"
-        #     bot_sendtext(bot_message)
-        #     print("\n", bot_message)
-        #
-        #     self.place_tp_order()
 
     def place_tp_sl(self, newsymbol, my_price, my_date):
 
@@ -223,25 +154,40 @@ class SsrmBot:
                                 f'--my_sl={my_sl}',
                                 f'--my_tp={my_tp}',
                                 ]).pid
+        return
 
+    def close_position(self, newsymbolf, my_profitf):
 
+        pid = subprocess.Popen(["python",
+                                "/usr/local/WB/dashboard/combo_cancel_order.py",
+                                f'--symbol={newsymbolf}',
+                                f'--my_profitf={my_profitf}'
+                                ]).pid
 
-        data = {
-            "symbol": f"{self.symbol} ({self.new_side})",
-            "side": f"{self.new_side}",
-            "amount": round(self.amount, n_rools[self.symbol.upper()]["decimals"]),
-            "price": float(round(self.my_price, n_rools[self.symbol.upper()]['price'])),
-            "direct": 'BUY',
-            "result": 0,
-            "date": f"{my_date}"
-        }
-        dbrools.insert_history(data=data)
-
-        bot_message = f"Added {self.symbol} ({self.new_side}), \n{round(self.amount, n_rools[self.symbol.upper()]['decimals'])}, \n{round(self.my_price, n_rools[self.symbol.upper()]['price'])},\n SL {round(self.my_sl, n_rools[self.symbol.upper()]['price'])} / TP {round(self.my_tp, n_rools[self.symbol.upper()]['price'])}"
+        new_side = 'LONG' if self.main_BD[newsymbolf]['main_direction'] == 1 else 'SHORT'
+        if float(my_profitf) > 0:
+            bot_message = f"TAKE PROFIT ({my_profitf})\n {newsymbolf} ({new_side})"
+            result = 1
+            priceout = round(self.main_BD[newsymbolf]['tp'], n_rools[newsymbolf]['price'])
+        else:
+            bot_message = f"STOP LOSS ({my_profitf})\n {newsymbolf} ({new_side})"
+            result = 2
+            priceout = round(self.main_BD[newsymbolf]['sl'], n_rools[newsymbolf]['price'])
         bot_sendtext(bot_message)
+
         print("\n", bot_message)
+        data = {
+            "symbol": newsymbolf,
+            "side": new_side,
+            "priceIn": round(self.main_BD[newsymbolf]['ap'], n_rools[newsymbolf]['price']),
+            "priceOut": priceout,
+            "result": result,
+            "profit": float(my_profitf),
+            "date": f"{self.main_BD[newsymbolf]['date']}"
+        }
+        dbrools.insert_new_history(data=data)
 
-
+        logging.info(f"\nClosed_position:\n {data}")
         return
 
     def algorithm(self, current_symbol):
@@ -301,11 +247,11 @@ class SsrmBot:
     def run(self):
         print(f"NEW FUTURE START")
 
-        # bot_sendtext(f"NEW FUTURE START")
+        bot_sendtext(f"NEW FUTURE START")
         self.binance_websocket_api_manager = BinanceWebSocketApiManager(exchange="binance.com",
                                                                         output_default="dict")
         self.binance_websocket_api_manager_future = BinanceWebSocketApiManager(exchange="binance.com-futures",
-                                                                        output_default="dict")
+                                                                               output_default="dict")
 
         self.binance_websocket_api_manager.create_stream(['kline_1m', 'kline_1h'],
                                                          markets,
@@ -313,8 +259,9 @@ class SsrmBot:
                                                          output="UnicornFy")
 
         self.binance_websocket_api_manager_future.create_stream('arr', '!userData',
-                                                         api_key=self.api_key, api_secret=self.api_secret,
-                                                         output="dict")
+                                                                api_key=self.api_key,
+                                                                api_secret=self.api_secret,
+                                                                output="dict")
 
         while self.bot_ping:
             if self.status:
@@ -325,51 +272,55 @@ class SsrmBot:
                                                                  output="UnicornFy")
 
                 self.binance_websocket_api_manager_future.create_stream('arr', '!userData',
-                                                                 api_key=self.api_key, api_secret=self.api_secret,
-                                                                 output="dict")
+                                                                        api_key=self.api_key,
+                                                                        api_secret=self.api_secret,
+                                                                        output="dict")
 
                 print(f"PARSER RESTART at {datetime.now().strftime('%H:%M:%S')}")
+                logging.warning(f"PARSER RESTART at {datetime.now().strftime('%H:%M:%S')}")
             else:
                 try:
                     if self.binance_websocket_api_manager.is_manager_stopping() or self.binance_websocket_api_manager_future.is_manager_stopping():
                         exit(0)
                         self.status = True
+                        logging.error('WEBSOCKET is_manager_stopping')
                     stream_buffer = self.binance_websocket_api_manager.pop_stream_data_from_stream_buffer()
-
                     stream_buffer_future = self.binance_websocket_api_manager_future.pop_stream_data_from_stream_buffer()
-
                     if stream_buffer_future is False:
                         pass
                     else:
                         if stream_buffer_future is not None:
                             try:
-                                # print("\nstream_buffer_future :\n", stream_buffer_future)
-                                if "e" in stream_buffer_future:
-                                    print("\n<<<<<<  e  >>>>>> :\n", stream_buffer_future)
+                                if stream_buffer_future['e'] == 'ACCOUNT_UPDATE':
+                                    # print(stream_buffer_future)
+                                    if float(stream_buffer_future['a']['P'][0]['ep']) > 0 and \
+                                            float(stream_buffer_future['a']['P'][0]['up']) == 0:
+                                        newsymbolf = stream_buffer_future['a']['P'][0]['s']
+                                        my_pricef = stream_buffer_future['a']['P'][0]['ep']
+                                        my_datef = stream_buffer_future['T']
+                                        print('Place_tp_sl')
+                                        logging.warning(f"Place_tp_sl {stream_buffer_future['a']['P'][0]['s']}")
+                                        self.place_tp_sl(newsymbolf, my_pricef, my_datef)
+                                    elif float(stream_buffer_future['a']['P'][0]['ep']) == 0 and \
+                                            float(stream_buffer_future['a']['P'][0]['up']) == 0:
+                                        self.main_BD[stream_buffer_future['a']['P'][0]['s']] = False
+                                        print('Clean main_BD')
+                                        logging.warning(f"Clean main_BD {stream_buffer_future['a']['P'][0]['s']}")
+                                    else:
+                                        newsymbolf = stream_buffer_future['a']['P'][0]['s']
+                                        my_profitf = stream_buffer_future['a']['P'][0]['up']
+                                        print('Close_position')
+                                        logging.warning(f'Close_position {newsymbolf}, {my_profitf}')
+                                        self.close_position(newsymbolf, my_profitf)
                             except KeyError:
-                                print(f"Exception FUTURE:\n {stream_buffer}")
+                                print(f"Exception KeyError FUTURE:\n {stream_buffer}")
+                                logging.error(f"Exception KeyError FUTURE:\n {stream_buffer}")
                                 time.sleep(0.5)
                     if stream_buffer is False:
                         time.sleep(0.01)
                     else:
                         if stream_buffer is not None:
                             try:
-                                # print("\nstream_buffer :\n", stream_buffer)
-                                # if "e" in stream_buffer:
-                                #     pass
-                                #     # if stream_buffer['e'] == 'ACCOUNT_UPDATE':
-                                #     #     if stream_buffer['a']['P'][0]['s'] == f'{self.symbol}usdt'.upper() and stream_buffer['a']['P'][0]['pa'] == "0":
-                                #     #         if self.order == 1:
-                                #     #             if self.trade >= self.my_price:
-                                #     #                 self.close_tp_order()
-                                #     #             if self.trade < self.my_price:
-                                #     #                 self.close_sl_order()
-                                #     #         elif self.order == 2:
-                                #     #             if self.trade > self.my_price:
-                                #     #                 self.close_sl_order()
-                                #     #             if self.trade <= self.my_price:
-                                #     #                 self.close_tp_order()
-                                # else:
                                 if stream_buffer['kline']['interval'] == "1m":
                                     if stream_buffer['event_time'] >= stream_buffer['kline']['kline_close_time']:
                                         new_row = [stream_buffer['kline']['kline_start_time'],
@@ -380,11 +331,11 @@ class SsrmBot:
                                                    stream_buffer['kline']['base_volume'],
                                                    stream_buffer['kline']['kline_close_time'],
                                                    None, None, None, None, None]
-                                        if self.main_data[stream_buffer["symbol"]][-1][-6] != stream_buffer['kline']['kline_close_time']:
+                                        if self.main_data[stream_buffer["symbol"]][-1][-6] != stream_buffer['kline'][
+                                            'kline_close_time']:
                                             self.main_data[stream_buffer["symbol"]].append(new_row)
                                             del self.main_data[stream_buffer["symbol"]][0]
                                             self.algorithm(stream_buffer["symbol"])
-
                                 elif stream_buffer['kline']['interval'] == "1h":
                                     if stream_buffer['event_time'] >= stream_buffer['kline']['kline_close_time']:
                                         new_row = [stream_buffer['kline']['kline_start_time'],
@@ -395,32 +346,31 @@ class SsrmBot:
                                                    stream_buffer['kline']['base_volume'],
                                                    stream_buffer['kline']['kline_close_time'],
                                                    None, None, None, None, None]
-                                        if self.main_data_hour[stream_buffer["symbol"]][-1][-6] != stream_buffer['kline']['kline_close_time']:
+                                        if self.main_data_hour[stream_buffer["symbol"]][-1][-6] != \
+                                                stream_buffer['kline']['kline_close_time']:
                                             self.main_data_hour[stream_buffer["symbol"]].append(new_row)
                                             del self.main_data_hour[stream_buffer["symbol"]][0]
                                             self.algorithm_rsi(stream_buffer["symbol"])
                                 time.sleep(0.01)
                             except KeyError:
                                 print(f"Exception :\n {stream_buffer}")
+                                logging.error(f"Exception :\n {stream_buffer}")
                                 time.sleep(0.5)
                 except Exception as exc:
                     self.status = True
                     traceback.print_exc()
                     bot_sendtext(f"NEW FUTURE Exception : \n {exc}")
+                    print(f"NEW FUTURE Exception : \n {exc}")
+                    logging.error(f"NEW FUTURE Exception : \n {exc}")
                     time.sleep(30)
 
 
-# new_keys = dbrools.my_keys.find_one()
+new_keys = dbrools.my_keys.find_one()
 
-# telega_api_key = new_keys['telega']['key']
-# telega_api_secret = new_keys['telega']['secret']
-# api_key = new_keys['bin']['key']
-# api_secret = new_keys['bin']['secret']
-
-telega_api_key = Settings.TELEGA_KEY
-telega_api_secret = Settings.TELEGA_API
-api_key = Settings.API_KEY
-api_secret = Settings.API_SECRET
+telega_api_key = new_keys['telega']['key']
+telega_api_secret = new_keys['telega']['secret']
+api_key = new_keys['bin']['key']
+api_secret = new_keys['bin']['secret']
 
 new_data = SsrmBot()
 

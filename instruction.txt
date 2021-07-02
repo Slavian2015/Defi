@@ -2,7 +2,7 @@
 ###########  PERMISSION DENIED ############################
  sudo chmod -R 0777 .docker/data/
  sudo chmod -R 0777 backtests/
-
+ sudo chmod -R 0777 dashboard/
 
 51.158.167.181:5005
 cd /var/www/Defi/
@@ -22,7 +22,7 @@ sudo docker exec -ti dashboard_defi bash
 ###################################
 
 
-python /usr/local/WB/dashboard/app.py > /usr/local/WB/data/MOB_APP_log.txt 2>&1 &
+python /usr/local/WB/dashboard/new_app.py > /usr/local/WB/data/MOB_APP_log.txt 2>&1 &
 ###################################
 python /usr/local/WB/dashboard/BOT_PARA.py > /usr/local/WB/data/BOT_PARA.txt 2>&1 &
 
