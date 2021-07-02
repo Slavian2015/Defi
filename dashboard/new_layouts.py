@@ -41,6 +41,19 @@ def content():
     else:
         balance = "0"
 
+    main_path_settings = f'/usr/local/WB/dashboard/data/active.json'
+
+    a_file1 = open(main_path_settings, "r")
+    rools = json.load(a_file1)
+    a_file1.close()
+
+    if rools['active']:
+        btn_name = "STOP"
+        btn_color = 'danger'
+    else:
+        btn_name = "START"
+        btn_color = 'success'
+
     cont = [
         dbc.Row(style={"width": "100%",
                        "height": "10vh",
@@ -74,7 +87,7 @@ def content():
                                                            },
                                                     width=6,
                                                     children=[
-                                                        dbc.Button("START", id="start_btn", color="success")])
+                                                        dbc.Button(btn_name, id="start_btn", color=btn_color)])
                                         ])]),
                     dbc.Col(style={"textAlign": "center",
                                    "margin": "0",
@@ -229,7 +242,7 @@ def column_left():
                 children=form),
         dbc.Row(style={"width": "100%",
                        "margin": "0",
-                       "margin-bottom": "50px",
+                       "margin-bottom": "5px",
                        "padding": "0"},
                 no_gutters=False,
                 children=form2),
@@ -296,9 +309,9 @@ def column_right():
     cont = [
         interval,
         dbc.Row(style={"width": "100%",
-                       "height": "60vh",
-                       "minHeight": "60vh",
-                       "maxHeight": "60vh",
+                       "height": "85vh",
+                       "minHeight": "85vh",
+                       "maxHeight": "85vh",
                        "overflowY": "scroll",
                        "margin": "0",
                        "padding": "0"},
@@ -755,17 +768,17 @@ def my_new_trade_history():
     child = html.Tr([
         html.Th([html.P(len(set(coins)), style={"min-width": "30px"})],
                 style={"padding": "0", "margin": "0"}),
-        html.Th([html.P(len(p_deals), style={"min-width": "40px"})],
+        html.Th([html.P(len(p_deals), style={"min-width": "30px"})],
                 style={"padding": "0", "margin": "0"}),
-        html.Th([html.P(len(brutto), style={"min-width": "40px"})],
+        html.Th([html.P(len(brutto), style={"min-width": "30px"})],
                 style={"padding": "0", "margin": "0"}),
-        html.Th([html.P(f"{ratio}%", style={"min-width": "50px"})],
+        html.Th([html.P(f"{ratio}%", style={"min-width": "40px"})],
                 style={"padding": "0", "margin": "0"}),
-        html.Th([html.P(commissions, style={"min-width": "40px"})],
+        html.Th([html.P(commissions, style={"min-width": "30px"})],
                 style={"padding": "0", "margin": "0"}),
-        html.Th([html.P(netto, style={"min-width": "40px"})],
+        html.Th([html.P(netto, style={"min-width": "30px"})],
                 style={"padding": "0", "margin": "0"}),
-        html.Th([dbc.Badge(pnl, style={"min-width": "50px"}, color="success")],
+        html.Th([dbc.Badge(pnl, style={"min-width": "40px"}, color="success")],
                 style={"padding": "0", "margin": "0"})
     ])
 

@@ -172,34 +172,28 @@ def toggle_modal(n1, symbol, old_btn_color):
 
 
 @dash_app.callback(
-    [Output("start_btn", 'color'),
-     Output("start_btn", 'value')],
-    [Input("start_btn", 'n_clicks')],
-    [State("start_btn", 'value')]
+    [Output("start_btn", 'children'),
+     Output("start_btn", 'color')],
+    [Input("start_btn", 'n_clicks')]
 )
-def toggle_modal_main(n1, old_btn):
+def toggle_modal_main(n1):
     ctx = dash.callback_context
     button_id = ctx.triggered[0]['prop_id'].split('.')
 
     if button_id[0] == 'start_btn':
-        if old_btn == "START":
+        main_path_settings = f'/usr/local/WB/dashboard/data/active.json'
+        a_file1 = open(main_path_settings, "r")
+        rools = json.load(a_file1)
+        a_file1.close()
+
+        if not rools['active']:
             pid = subprocess.Popen(["python", "/usr/local/WB/dashboard/my_class/combo.py"]).pid
-
-            main_path_settings = f'/usr/local/WB/dashboard/data/active.json'
-
-            a_file1 = open(main_path_settings, "r")
-            rools = json.load(a_file1)
-            a_file1.close()
             rools['active'] = pid
             f = open(main_path_settings, "w")
             json.dump(rools, f)
             f.close()
             return ["STOP", "danger"]
         else:
-            main_path_settings = f'/usr/local/WB/dashboard/data/active.json'
-            a_file1 = open(main_path_settings, "r")
-            rools = json.load(a_file1)
-            a_file1.close()
             pidid = rools['active']
             rools['active'] = False
             f = open(main_path_settings, "w")
